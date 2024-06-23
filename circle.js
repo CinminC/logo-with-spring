@@ -1,14 +1,14 @@
-class Particle{
+class Particle {
     constructor(x, y, r, fixed) {
         this.x = x;
         this.y = y;
         this.r = r;
         let options = {
             friction: 1,
-            restitution: 0.1,
+            restitution: 0.9,
             isStatic: fixed
         }
-        this.body = Bodies.circle(this.x, this.y, this.r,  options);
+        this.body = Bodies.circle(this.x, this.y, this.r, options);
         Composite.add(world, this.body);
     }
 
@@ -22,8 +22,8 @@ class Particle{
         strokeWeight(1);
         stroke(255)
         fill(127);
-        ellipse(0, 0, this.r*2);
-        line(0,0,this.r,0);
+        ellipse(0, 0, this.r * 2);
+        line(0, 0, this.r, 0);
         pop();
     }
 }
