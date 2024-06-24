@@ -1,4 +1,4 @@
-const { Engine, World, Bodies, Body, Constraint, Mouse, MouseConstraint } = Matter;
+const { Engine, World, Bodies, Body, Constraint, Mouse, MouseConstraint, Composite } = Matter;
 
 let engine;
 let world;
@@ -8,7 +8,8 @@ let mConstraint;
 let initialPositions = []; // 用來保存初始位置
 
 let images = [];
-let imagePaths = ['img/college.png', 'img/of.png', 'img/humanities.png', 'img/arts.png', 'img/and.png', 'img/social.png', 'img/sciences.png']; // 替換成你的圖片路徑
+let imagePaths = ['img/college.png', 'img/of.png', 'img/humanities.png', 'img/arts.png']; // 替換成你的圖片路徑
+let imagePaths2 = ['img/and.png', 'img/social.png', 'img/sciences.png']; // 替換成你的圖片路徑
 let imageScale = 0.4
 let imageSpacing = 20;
 let startX = 100
@@ -19,28 +20,38 @@ function preload() {
     for (let i = 0; i < imagePaths.length; i++) {
         images[i] = loadImage(imagePaths[i]);
     }
+    for (let i = 0; i < imagePaths2.length; i++) {
+        images[i] = loadImage(imagePaths[i]);
+    }
 }
 function setup() {
     createCanvas(400, 400);
 
-    // 創建一個引擎和世界
+
     engine = Engine.create();
     world = engine.world;
-    engine.world.gravity.y = 0; // 禁止重力影響 Y 方向的運動
 
-    // 創建四個圓形物體，位置固定在畫布的四分之一和四分之三處
+    //no gravity
+    engine.world.gravity.x = 0;
+    engine.world.gravity.y = 0;
+
+    //init p
+    let totalWidth = calculateTotalWidth(images)
+    startX = (width - totalWidth) / 2
     let x = startX
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < imagePaths.length; i++) {
         let imageWidth = images[i].width * imageScale;
         let y = height / 2;
         let circle = Bodies.rectangle(x + imageWidth / 2, y, images[i].width * imageScale, images[i].height * imageScale, { restitution: 1, friction: 0.5 });
         circles.push(circle);
-        initialPositions.push({ x: circle.position.x, y: circle.position.y }); // 儲存初始位置
+        initialPositions.push({ x: circle.position.x, y: circle.position.y }); // save init position
         World.add(world, circle);
-        x += imageWidth / 2 + imageSpacing + imageWidth / 2;
+        print(totalWidth)
+        print(x + imageWidth / 2)
+        x += imageWidth + imageSpacing;
     }
 
-    // 將圓形物體兩兩連接
+    //set up constraints
     for (let i = 0; i < circles.length - 1; i++) {
         let options = {
             bodyA: circles[i],
@@ -51,18 +62,18 @@ function setup() {
         let constraint = Constraint.create(options);
         constraints.push(constraint);
         World.add(world, constraint);
-        print(circles[i + 1].position.x - circles[i].position.x)
     }
 
-    // 設置鼠標拖動約束
+
+    // mouse drage(maybe dont need)
     let canvasMouse = Mouse.create(canvas.elt);
     let options = {
         mouse: canvasMouse,
     };
     canvasMouse.pixelRatio = pixelDensity();
 
-    mConstraint = MouseConstraint.create(engine, options);
-    World.add(world, mConstraint);
+    // mConstraint = MouseConstraint.create(engine, options);
+    // World.add(world, mConstraint);
 }
 
 function draw() {
@@ -71,7 +82,7 @@ function draw() {
     rectMode(CENTER)
 
     if (showDebug) {
-        // 繪製連接線（約束）
+        // draw constraints
         for (let constraint of constraints) {
             push()
             stroke(0);
@@ -101,8 +112,39 @@ function draw() {
     }
 
 
-    // 根據 mouseX 計算應用的力
+    // calculate new pos, set new constraints
     if (mouseIsPressed) {
+        imageSpacing = map(mouseX, 0, width, 10, 80)
+
+        let totalWidth = calculateTotalWidth(images)
+        startX = (width - totalWidth) / 2
+        let xx = startX
+        for (let i = 0; i < circles.length; i++) {
+            let imageWidth = images[i].width * imageScale;
+
+            if (i < circles.length - 1) {
+                Composite.remove(world, constraints[i]);
+            }
+
+            initialPositions[i].x = xx + imageWidth / 2
+            xx += imageWidth + imageSpacing;
+
+        }
+        constraints = []
+
+        for (let i = 0; i < circles.length - 1; i++) {
+            let options = {
+                bodyA: circles[i],
+                bodyB: circles[i + 1],
+                length: initialPositions[i + 1].x - initialPositions[i].x,
+                stiffness: 0.1
+            };
+            let constraint = Constraint.create(options);
+            constraints.push(constraint);
+            World.add(world, constraint);
+        }
+
+        //apply force
         let forceMagnitude = map(mouseX, 0, width, 0, force);
         Body.applyForce(circles[0], { x: circles[0].position.x, y: circles[0].position.y }, { x: -forceMagnitude, y: 0 });
         Body.applyForce(circles[1], { x: circles[1].position.x, y: circles[1].position.y }, { x: -forceMagnitude, y: 0 });
@@ -155,3 +197,15 @@ function keyPressed() {
     }
 
 }
+
+function calculateTotalWidth(images) {
+    let totalWidth = 0;
+    for (let i = 0; i < images.length; i++) {
+        totalWidth += images[i].width * imageScale;
+        if (i < images.length - 1) {
+            totalWidth += imageSpacing;
+        }
+    }
+    return totalWidth;
+}
+
