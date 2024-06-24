@@ -1,14 +1,21 @@
 class Particle {
-    constructor(x, y, r, fixed) {
+    constructor(x, y, w, h, fixed) {
         this.x = x;
         this.y = y;
         this.r = r;
         let options = {
             friction: 1,
             restitution: 0.9,
-            isStatic: fixed
+            isStatic: fixed,
+            render: {
+                sprite: {
+                    texture: 'img/college.png', // Replace with your image path
+                    xScale: 1, // Scale the image if needed
+                    yScale: 1
+                }
+            }
         }
-        this.body = Bodies.circle(this.x, this.y, this.r, options);
+        this.body = Bodies.rectangle(this.x, this.y, this.w, this.h, options);
         Composite.add(world, this.body);
     }
 
