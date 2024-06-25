@@ -9,6 +9,8 @@ class ImageManager {
         this.startY = startY;
         this.imageScale = imageScale;
         this.imageSpacing = imageSpacing;
+        this.widthWithSpacing = 0;
+        this.totalWidth = 0;
     }
 
     preloadImages() {
@@ -17,10 +19,12 @@ class ImageManager {
         }
     }
 
-    initialize() {
-        let totalWidth = this.calculateTotalWidth();
-        this.startX = (width - totalWidth) / 2
+    initialize(widthWithSpacing) {
+        this.widthWithSpacing = widthWithSpacing;
+        this.totalWidth = this.calculateTotalWidth();
+        this.startX = (width - widthWithSpacing) / 2
         let x = this.startX;
+        let spacing = (widthWithSpacing - this.totalWidth) / (this.imageElements.length - 1)
 
         for (let img of this.imageElements) {
             let imageWidth = img.width * this.imageScale;
@@ -29,7 +33,7 @@ class ImageManager {
             this.rect.push(rectangle);
             this.initialPositions.push({ x: rectangle.position.x, y: rectangle.position.y });
             World.add(world, rectangle);
-            x += imageWidth + this.imageSpacing;
+            x += imageWidth + spacing;
         }
 
         this.initializeConstraints();
@@ -49,13 +53,21 @@ class ImageManager {
         }
     }
 
-    calculateTotalWidth() {
+    calculateWidthWithSpacing() {
         let totalWidth = 0;
         for (let img of this.imageElements) {
             totalWidth += img.width * this.imageScale;
             if (this.imageElements.indexOf(img) < this.imageElements.length - 1) {
                 totalWidth += this.imageSpacing;
             }
+        }
+        return totalWidth;
+    }
+
+    calculateTotalWidth() {
+        let totalWidth = 0;
+        for (let img of this.imageElements) {
+            totalWidth += img.width * this.imageScale;
         }
         return totalWidth;
     }
@@ -87,11 +99,12 @@ class ImageManager {
     }
 
     updatePositions() {
-        this.imageSpacing = map(mouseX, 0, width, 10, 80);
-
+        // this.imageSpacing = map(mouseX, 0, width, 10, 80);
+        let newWidthWithSpacing = map(mouseX, 0, width, this.widthWithSpacing, this.widthWithSpacing * 1.5);
         let totalWidth = this.calculateTotalWidth();
-        this.startX = (width - totalWidth) / 2
+        this.startX = (width - newWidthWithSpacing) / 2
         let xx = this.startX;
+        this.imageSpacing = (newWidthWithSpacing - totalWidth) / (this.imageElements.length - 1)
 
         for (let i = 0; i < this.rect.length; i++) {
             let imageWidth = this.imageElements[i].width * this.imageScale;
@@ -213,10 +226,11 @@ function setup() {
     engine.world.gravity.y = 0;
 
 
-    imageManager1.initialize();
+    let widthWithSpacing = imageManager1.calculateWidthWithSpacing()
+    imageManager1.initialize(widthWithSpacing);
 
     imageManager2.updatePosY(8);
-    imageManager2.initialize();
+    imageManager2.initialize(widthWithSpacing);
 
     // mouse drage(maybe dont need)
     let canvasMouse = Mouse.create(canvas.elt);
@@ -265,4 +279,3 @@ function keyPressed() {
     }
 
 }
-
