@@ -11,6 +11,7 @@ class ImageManager {
         this.imageSpacing = imageSpacing;
         this.widthWithSpacing = 0;
         this.totalWidth = 0;
+        this.newWidthWithSpacing = 0;
     }
 
     preloadImages() {
@@ -100,11 +101,11 @@ class ImageManager {
 
     updatePositions() {
         // this.imageSpacing = map(mouseX, 0, width, 10, 80);
-        let newWidthWithSpacing = map(mouseX, 0, width, this.widthWithSpacing, this.widthWithSpacing * 1.5);
+        this.newWidthWithSpacing = map(mouseX, 0, width, this.widthWithSpacing, this.widthWithSpacing * 1.5);
         let totalWidth = this.calculateTotalWidth();
-        this.startX = (width - newWidthWithSpacing) / 2
+        this.startX = (width - this.newWidthWithSpacing) / 2
         let xx = this.startX;
-        this.imageSpacing = (newWidthWithSpacing - totalWidth) / (this.imageElements.length - 1)
+        this.imageSpacing = (this.newWidthWithSpacing - totalWidth) / (this.imageElements.length - 1)
 
         for (let i = 0; i < this.rect.length; i++) {
             let imageWidth = this.imageElements[i].width * this.imageScale;
@@ -130,6 +131,11 @@ class ImageManager {
             World.add(world, constraint);
         }
     }
+
+    getNewWidthWithSpacing() {
+        return this.newWidthWithSpacing;
+    }
+
     applyForces() {
         let forceMagnitude = map(mouseX, 0, width, 0, force);
         let midIndex = Math.floor(this.rect.length / 2);
@@ -201,12 +207,19 @@ let imagePaths = ['img/college.png', 'img/of.png', 'img/humanities.png', 'img/ar
 let imagePaths2 = ['img/and.png', 'img/social.png', 'img/sciences.png']; // 替換成你的圖片路徑
 let imageScale = 0.4
 let imageSpacing = 20;
+let widthWithSpacing = 0;
 let startX = 100
 
 let showDebug = false
 let force = 0.01
 let whValue = 400;
 let imageManager1;
+
+//logo
+let logoWidth = 0;
+let logoTargetWidth = 0;
+let barPosX = 0;
+let barTargetPosX = 0;
 function preload() {
     imageManager1 = new ImageManager(imagePaths, whValue / 2);
     imageManager2 = new ImageManager(imagePaths2, whValue / 2);
@@ -226,7 +239,9 @@ function setup() {
     engine.world.gravity.y = 0;
 
 
-    let widthWithSpacing = imageManager1.calculateWidthWithSpacing()
+    widthWithSpacing = imageManager1.calculateWidthWithSpacing()
+    logoWidth = widthWithSpacing
+    logoTargetWidth = widthWithSpacing
     imageManager1.initialize(widthWithSpacing);
 
     imageManager2.updatePosY(8);
@@ -244,9 +259,35 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(255);
     Engine.update(engine);
     rectMode(CENTER)
+
+    //draw logo
+    logoWidth = lerp(logoWidth, logoTargetWidth, 0.1)
+    barPosX = lerp(barPosX, barTargetPosX, 0.1)
+    let logoPosY = height / 2 - 34
+    let logoHeight = 40;
+    push()
+    noFill()
+    strokeWeight(2)
+    strokeCap(SQUARE);
+    line(width / 2 - logoWidth / 2, logoPosY - logoHeight / 2, width / 2 - logoWidth / 2, logoPosY + logoHeight / 2)
+    line(width / 2 + logoWidth / 2, logoPosY - logoHeight / 2, width / 2 + logoWidth / 2, logoPosY + logoHeight / 2)
+    strokeCap(PROJECT);
+    line(width / 2 - logoWidth / 2, logoPosY - logoHeight / 2, width / 2 + logoWidth / 2, logoPosY - logoHeight / 2)
+    // rect(width / 2, logoPosY, logoWidth, 40)
+    noStroke()
+    //grey
+    fill(178)
+    rect(width / 2, logoPosY - 5, logoWidth - 20, 10)
+    rect(width / 2, logoPosY + 15, logoWidth - 20, 10)
+
+    //blue
+    fill('#033097')
+    rect(width / 2 + barPosX, logoPosY + logoHeight / 8, logoHeight / 4, logoHeight * 3 / 4)
+
+    pop()
 
     if (showDebug) {
         imageManager1.drawDebug();
@@ -256,9 +297,13 @@ function draw() {
     if (mouseIsPressed) {
         imageManager1.updatePositions();
         imageManager2.updatePositions();
+        widthWithSpacing = imageManager1.getNewWidthWithSpacing()
+        logoTargetWidth = widthWithSpacing
 
         imageManager1.applyForces();
         imageManager2.applyForces();
+        barTargetPosX = map(mouseX, 0, width, -50, 50)
+
     }
 
     imageManager1.updateDamping();
