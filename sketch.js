@@ -137,7 +137,9 @@ class ImageManager {
     }
 
     applyForces() {
-        let forceMagnitude = map(mouseX, 0, width, 0, force);
+        // let forceMagnitude = 0.005
+        // let forceMagnitude = map(mouseX, 0, width, 0, force);
+        let forceMagnitude = map(mouseX - pmouseX, -width, width, -force, force);
         let midIndex = Math.floor(this.rect.length / 2);
 
         for (let i = 0; i < this.rect.length; i++) {
@@ -218,8 +220,12 @@ let imageManager1;
 //logo
 let logoWidth = 0;
 let logoTargetWidth = 0;
-let barPosX = 0;
-let barTargetPosX = 0;
+let barX = 0;
+let barY = 0;
+let barW = 0;
+let barH = 0;
+let barTargetX = 0;
+let isScale = false
 function preload() {
     imageManager1 = new ImageManager(imagePaths, whValue / 2);
     imageManager2 = new ImageManager(imagePaths2, whValue / 2);
@@ -247,6 +253,20 @@ function setup() {
     imageManager2.updatePosY(8);
     imageManager2.initialize(widthWithSpacing);
 
+
+    //blue bar
+    barX = width / 2;
+    barTargetX = width / 2;
+    barY = 0;
+    barW = 0;
+    barH = 0;
+
+    //checkbox
+    checkbox = createCheckbox('show target position');
+    checkbox.position(250, 10);
+    checkbox.style('transform', 'scale(0.5)');
+    checkbox.style('font-family', 'Verdana');
+
     // mouse drage(maybe dont need)
     let canvasMouse = Mouse.create(canvas.elt);
     let options = {
@@ -262,12 +282,23 @@ function draw() {
     background(255);
     Engine.update(engine);
     rectMode(CENTER)
+    //hint
+    textSize(8);
+    textFont('Verdana');
+    text('Hint: Drag the blue bar to scale', 10, 20);
 
     //draw logo
     logoWidth = lerp(logoWidth, logoTargetWidth, 0.1)
-    barPosX = lerp(barPosX, barTargetPosX, 0.1)
+
     let logoPosY = height / 2 - 34
     let logoHeight = 40;
+
+    //blue bar
+    barX = lerp(barX, barTargetX, 0.1)
+    barY = logoPosY + logoHeight / 8
+    barW = logoHeight / 4
+    barH = logoHeight * 3 / 4
+
     push()
     noFill()
     strokeWeight(2)
@@ -285,16 +316,28 @@ function draw() {
 
     //blue
     fill('#033097')
-    rect(width / 2 + barPosX, logoPosY + logoHeight / 8, logoHeight / 4, logoHeight * 3 / 4)
+    rect(barX, barY, barW, barH)
 
     pop()
 
-    if (showDebug) {
+    if (checkbox.checked()) {
         imageManager1.drawDebug();
         imageManager2.drawDebug();
+        line(pmouseX, pmouseY, mouseX, mouseY);
     }
 
     if (mouseIsPressed) {
+        if (mouseX > barX - barW / 2 && mouseX < barX + barW / 2 && mouseY > barY - barH / 2 && mouseY < barY + barH) {
+            isScale = true;
+        }
+    }
+    if (isScale) {
+        push()
+        noStroke()
+        fill("#577ED7")
+        rect(barX, barY, barW, barH)
+        pop()
+
         imageManager1.updatePositions();
         imageManager2.updatePositions();
         widthWithSpacing = imageManager1.getNewWidthWithSpacing()
@@ -302,7 +345,14 @@ function draw() {
 
         imageManager1.applyForces();
         imageManager2.applyForces();
-        barTargetPosX = map(mouseX, 0, width, -50, 50)
+        if (mouseX > width / 2 + widthWithSpacing / 2 - barW * 3) {
+            barTargetX = width / 2 + widthWithSpacing / 2 - barW * 3
+        } else if (mouseX < width / 2 - widthWithSpacing / 2 + barW * 3) {
+            barTargetX = width / 2 - widthWithSpacing / 2 + barW * 3
+        } else {
+            barTargetX = mouseX
+        }
+        // barTargetX = map(mouseX, 0, width, width / 2 - 50, width / 2 + 50)
 
     }
 
@@ -323,4 +373,8 @@ function keyPressed() {
         print('keyPressed')
     }
 
+}
+
+function mouseReleased() {
+    isScale = false;
 }
