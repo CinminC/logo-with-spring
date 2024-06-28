@@ -85,28 +85,47 @@ class ImageManager {
             line(constraint.bodyA.position.x, constraint.bodyA.position.y, constraint.bodyB.position.x, constraint.bodyB.position.y);
             pop();
         }
-
-        let x = this.startX;
         for (let img of this.imageElements) {
-            let imageWidth = img.width * this.imageScale;
             let y = this.startY;
             push();
             fill(20);
             noStroke()
-            rect(x + imageWidth / 2, y, img.width * this.imageScale, img.height * this.imageScale);
+            rect(this.initialPositions[this.imageElements.indexOf(img)].x, y, img.width * this.imageScale, img.height * this.imageScale);
             pop();
-            x += imageWidth + this.imageSpacing;
         }
     }
 
     updatePositions() {
         // this.imageSpacing = map(mouseX, 0, width, 10, 80);
-        this.newWidthWithSpacing = map(mouseX, 0, width, this.widthWithSpacing, this.widthWithSpacing * 1.5);
+        this.newWidthWithSpacing = map(mouseX, 0, width, this.widthWithSpacing, this.widthWithSpacing * 1.5, true);
         let totalWidth = this.calculateTotalWidth();
         this.startX = (width - this.newWidthWithSpacing) / 2
         let xx = this.startX;
         this.imageSpacing = (this.newWidthWithSpacing - totalWidth) / (this.imageElements.length - 1)
 
+        // for (let i = 0; i < this.rect.length; i++) {
+        //     let imageWidth = this.imageElements[i].width * this.imageScale;
+
+        //     if (i < this.rect.length - 1) {
+        //         Composite.remove(world, this.constraints[i]);
+        //     }
+
+        //     this.initialPositions[i].x = xx + imageWidth / 2;
+        //     xx += imageWidth + this.imageSpacing;
+        // }
+        // this.constraints = [];
+
+        // for (let i = 0; i < this.rect.length - 1; i++) {
+        //     let options = {
+        //         bodyA: this.rect[i],
+        //         bodyB: this.rect[i + 1],
+        //         length: this.initialPositions[i + 1].x - this.initialPositions[i].x,
+        //         stiffness: 0.05
+        //     };
+        //     let constraint = Constraint.create(options);
+        //     this.constraints.push(constraint);
+        //     World.add(world, constraint);
+        // }
         for (let i = 0; i < this.rect.length; i++) {
             let imageWidth = this.imageElements[i].width * this.imageScale;
 
@@ -121,15 +140,19 @@ class ImageManager {
 
         for (let i = 0; i < this.rect.length - 1; i++) {
             let options = {
+
                 bodyA: this.rect[i],
                 bodyB: this.rect[i + 1],
                 length: this.initialPositions[i + 1].x - this.initialPositions[i].x,
-                stiffness: 0.1
+                stiffness: 0.05
             };
             let constraint = Constraint.create(options);
             this.constraints.push(constraint);
             World.add(world, constraint);
         }
+
+
+
     }
 
     getNewWidthWithSpacing() {
@@ -160,6 +183,31 @@ class ImageManager {
         // Body.applyForce(this.rect[3], { x: this.rect[3].position.x, y: this.rect[3].position.y }, { x: forceMagnitude, y: 0 });
 
     }
+    // applyForces() {
+    //     let baseForceMagnitude = map(mouseX - pmouseX, -width, width, -force, force);
+    //     let midIndex = Math.floor(this.rect.length / 2);
+
+    //     for (let i = 0; i < this.rect.length; i++) {
+    //         let distanceToCenter = Math.abs(i - midIndex);
+
+    //         //closer to center, bigger force
+    //         let forceScale = 1 - (distanceToCenter / midIndex) * 0.5; // 比例因子，中心位置为1，边缘位置为0.5
+    //         let forceMagnitude = baseForceMagnitude * forceScale;
+
+    //         let direction = 0;
+    //         if (i < midIndex) {
+    //             direction = -forceMagnitude;
+    //         } else if (i > midIndex || this.rect.length % 2 === 0) {
+    //             direction = forceMagnitude;
+    //         }
+
+    //         Body.applyForce(this.rect[i],
+    //             { x: this.rect[i].position.x, y: this.rect[i].position.y },
+    //             { x: direction, y: 0 }
+    //         );
+    //     }
+    // }
+
 
     updateDamping() {
         for (let rectangle of this.rect) {
@@ -337,14 +385,16 @@ function draw() {
         fill("#577ED7")
         rect(barX, barY, barW, barH)
         pop()
+        imageManager1.applyForces();
+        imageManager2.applyForces();
 
         imageManager1.updatePositions();
         imageManager2.updatePositions();
         widthWithSpacing = imageManager1.getNewWidthWithSpacing()
         logoTargetWidth = widthWithSpacing
 
-        imageManager1.applyForces();
-        imageManager2.applyForces();
+        // imageManager1.applyForces();
+        // imageManager2.applyForces();
         if (mouseX > width / 2 + widthWithSpacing / 2 - barW * 3) {
             barTargetX = width / 2 + widthWithSpacing / 2 - barW * 3
         } else if (mouseX < width / 2 - widthWithSpacing / 2 + barW * 3) {
