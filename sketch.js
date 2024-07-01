@@ -12,6 +12,7 @@ class ImageManager {
         this.widthWithSpacing = 0;
         this.totalWidth = 0;
         this.newWidthWithSpacing = 0;
+        this.stillDetect = false
     }
 
     preloadImages() {
@@ -150,9 +151,6 @@ class ImageManager {
             this.constraints.push(constraint);
             World.add(world, constraint);
         }
-
-
-
     }
 
     getNewWidthWithSpacing() {
@@ -162,6 +160,8 @@ class ImageManager {
     applyForces() {
         // let forceMagnitude = 0.005
         // let forceMagnitude = map(mouseX, 0, width, 0, force);
+        this.stillDetect = true;
+
         let forceMagnitude = map(mouseX - pmouseX, -width, width, -force, force);
         let midIndex = Math.floor(this.rect.length / 2);
 
@@ -240,6 +240,29 @@ class ImageManager {
             count++;
         }
     }
+
+    isAlmostStill() {
+        let velocityThreshold = 0.1; // 速度阈值
+        let accelerationThreshold = 0.0; // 加速度阈值
+        // print(Math.sqrt(this.rect[0].force.x ** 2 + this.rect[0].force.y ** 2) / this.rect[0].mass)
+        for (let rect of this.rect) {
+            let velocity = Math.sqrt(rect.velocity.x ** 2 + rect.velocity.y ** 2);
+            let acceleration = Math.sqrt(rect.force.x ** 2 + rect.force.y ** 2) / rect.mass;
+
+            if (acceleration > accelerationThreshold) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    updatePositionsWhenStill() {
+        if (this.stillDetect == true && this.isAlmostStill()) {
+            this.updatePositions();
+            this.stillDetect = false;
+        }
+    }
+
 }
 
 const { Engine, World, Bodies, Body, Constraint, Mouse, MouseConstraint, Composite } = Matter;
@@ -385,16 +408,14 @@ function draw() {
         fill("#577ED7")
         rect(barX, barY, barW, barH)
         pop()
+
         imageManager1.applyForces();
         imageManager2.applyForces();
-
         imageManager1.updatePositions();
         imageManager2.updatePositions();
         widthWithSpacing = imageManager1.getNewWidthWithSpacing()
         logoTargetWidth = widthWithSpacing
 
-        // imageManager1.applyForces();
-        // imageManager2.applyForces();
         if (mouseX > width / 2 + widthWithSpacing / 2 - barW * 3) {
             barTargetX = width / 2 + widthWithSpacing / 2 - barW * 3
         } else if (mouseX < width / 2 - widthWithSpacing / 2 + barW * 3) {
@@ -405,6 +426,26 @@ function draw() {
         // barTargetX = map(mouseX, 0, width, width / 2 - 50, width / 2 + 50)
 
     }
+
+    // imageManager1.updatePositionsWhenStill();
+    // imageManager2.updatePositionsWhenStill();
+    // widthWithSpacing = imageManager1.getNewWidthWithSpacing()
+    // if (isScale) {
+    //     logoTargetWidth = widthWithSpacing
+
+    //     if (mouseX > width / 2 + widthWithSpacing / 2 - barW * 3) {
+    //         barTargetX = width / 2 + widthWithSpacing / 2 - barW * 3
+    //     } else if (mouseX < width / 2 - widthWithSpacing / 2 + barW * 3) {
+    //         barTargetX = width / 2 - widthWithSpacing / 2 + barW * 3
+    //     } else {
+    //         barTargetX = mouseX
+    //     }
+
+    // }
+
+
+
+
 
     imageManager1.updateDamping();
     imageManager2.updateDamping();
