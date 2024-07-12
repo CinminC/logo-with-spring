@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+      <script type="module">
+        import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
+        const gui = new GUI();
+        let userControl = { damping: 1.18, textEasing: 0.05, logoEasing: 0.1, force:0.01, stiffness:0.05 }
+
+        gui.add(userControl, 'damping', 1.05, 2, 0.01).onChange(value => {
+          guiDampingLerp(value);
+        });
+        gui.add(userControl, 'textEasing', 0.01, 0.4, 0.01).onChange(value => {
+          guiTextEasing(value);
+        });
+        gui.add(userControl, 'logoEasing', 0.1, 0.5, 0.01).onChange(value => {
+          guiLogoEasing(value);
+        });
+        gui.add(userControl, 'force', 0, 0.03, 0.01).onChange(value => {
+            guiForce(value);
+        });
+        gui.add(userControl, 'stiffness', 0.01, 0.1,0.01).onChange(value => {
+            guiStiffness(value);
+        });
+
+      </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>

@@ -145,7 +145,7 @@ class ImageManager {
                 bodyA: this.rect[i],
                 bodyB: this.rect[i + 1],
                 length: this.initialPositions[i + 1].x - this.initialPositions[i].x,
-                stiffness: 0.05
+                stiffness: stiffness
             };
             let constraint = Constraint.create(options);
             this.constraints.push(constraint);
@@ -211,7 +211,7 @@ class ImageManager {
 
     updateDamping() {
         for (let rectangle of this.rect) {
-            Body.setVelocity(rectangle, { x: rectangle.velocity.x * 0.85, y: rectangle.velocity.y });
+            Body.setVelocity(rectangle, { x: rectangle.velocity.x * (1 / damping), y: rectangle.velocity.y });
         }
     }
 
@@ -222,11 +222,11 @@ class ImageManager {
             let currPos = rectangle.position;
             let distX = initialPos.x - currPos.x;
             let distY = initialPos.y - currPos.y;
-            let easing = 0.05;
+            // let easing = 0.01;
 
             if (Math.abs(rectangle.velocity.x) < 0.1 && Math.abs(rectangle.velocity.y) < 0.1) {
-                rectangle.position.x += distX * easing;
-                rectangle.position.y += distY * easing;
+                rectangle.position.x += distX * textEasing;
+                rectangle.position.y += distY * textEasing;
             }
         }
     }
@@ -284,9 +284,8 @@ let widthWithSpacing = 0;
 let startX = 100
 
 let showDebug = false
-let force = 0.01
 let whValue = 400;
-let imageManager1;
+let imageManager1, imageManager2;
 
 //logo
 let logoWidth = 0;
@@ -297,6 +296,33 @@ let barW = 0;
 let barH = 0;
 let barTargetX = 0;
 let isScale = false
+
+//slider
+let damping = 1.18;
+let textEasing = 0.05;
+let logoEasing = 0.1;
+let force = 0.01
+let stiffness = 0.05
+
+function guiDampingLerp(ratio) {
+    damping = ratio
+}
+function guiTextEasing(ratio) {
+    textEasing = ratio
+}
+
+function guiLogoEasing(ratio) {
+    logoEasing = ratio
+}
+
+function guiForce(ratio) {
+    force = ratio
+}
+
+function guiStiffness(ratio) {
+    stiffness = ratio
+}
+
 function preload() {
     imageManager1 = new ImageManager(imagePaths, whValue / 2);
     imageManager2 = new ImageManager(imagePaths2, whValue / 2);
@@ -357,15 +383,14 @@ function draw() {
     textSize(8);
     textFont('Verdana');
     text('Hint: Drag the blue bar to scale', 10, 20);
-
     //draw logo
-    logoWidth = lerp(logoWidth, logoTargetWidth, 0.1)
+    logoWidth = lerp(logoWidth, logoTargetWidth, logoEasing)
 
     let logoPosY = height / 2 - 34
     let logoHeight = 40;
 
     //blue bar
-    barX = lerp(barX, barTargetX, 0.1)
+    barX = lerp(barX, barTargetX, logoEasing)
     barY = logoPosY + logoHeight / 8
     barW = logoHeight / 4
     barH = logoHeight * 3 / 4
