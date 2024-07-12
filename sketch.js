@@ -303,6 +303,7 @@ let textEasing = 0.05;
 let logoEasing = 0.1;
 let force = 0.01
 let stiffness = 0.05
+let isShowPos = false;
 
 function guiDampingLerp(ratio) {
     damping = ratio
@@ -323,6 +324,53 @@ function guiStiffness(ratio) {
     stiffness = ratio
 }
 
+function guiShowPos(s) {
+    isShowPos = s
+}
+
+
+let GLOBAL = {
+    "size": {
+        "width": 400,
+        "height": 400,
+        "ratioFixed": true
+    },
+    "pixelDensity": 2
+}
+
+// essential global functions
+function fitCanvasSize() {
+    //given canvas width and height and window with height, fit canvas to window
+    if (GLOBAL.size.ratioFixed) {
+
+        let windowRatio = window.innerWidth / window.innerHeight
+        let canvasRatio = GLOBAL.size.width / GLOBAL.size.height
+
+
+        if (windowRatio > canvasRatio) {
+            // window is wider than canvas
+            let minH = window.innerHeight
+            let minW = minH * canvasRatio
+            //set canvas size
+            canvas.style.width = minW + "px"
+            canvas.style.height = minH + "px"
+        } else {
+            // window is taller than canvas
+            let minW = window.innerWidth
+            let minH = minW / canvasRatio
+            //set canvas size
+            canvas.style.width = minW + "px"
+            canvas.style.height = minH + "px"
+        }
+
+    }
+
+}
+
+function windowResized() {
+    fitCanvasSize()
+}
+
 function preload() {
     imageManager1 = new ImageManager(imagePaths, whValue / 2);
     imageManager2 = new ImageManager(imagePaths2, whValue / 2);
@@ -331,7 +379,9 @@ function preload() {
     imageManager2.preloadImages();
 }
 function setup() {
+    pixelDensity(2)
     createCanvas(whValue, whValue);
+    fitCanvasSize()
 
 
     engine = Engine.create();
@@ -357,12 +407,6 @@ function setup() {
     barY = 0;
     barW = 0;
     barH = 0;
-
-    //checkbox
-    checkbox = createCheckbox('show target position');
-    checkbox.position(250, 10);
-    checkbox.style('transform', 'scale(0.5)');
-    checkbox.style('font-family', 'Verdana');
 
     // mouse drage(maybe dont need)
     let canvasMouse = Mouse.create(canvas.elt);
@@ -416,7 +460,7 @@ function draw() {
 
     pop()
 
-    if (checkbox.checked()) {
+    if (isShowPos) {
         imageManager1.drawDebug();
         imageManager2.drawDebug();
         line(pmouseX, pmouseY, mouseX, mouseY);
