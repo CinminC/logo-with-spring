@@ -455,7 +455,7 @@ function draw() {
     rect(width / 2, logoPosY + 15, logoWidth - 20, 10)
 
     //blue
-    fill('#033097')
+    fill('#0139D9')
     rect(barX, barY, barW, barH)
 
     pop()
@@ -474,7 +474,7 @@ function draw() {
     if (isScale) {
         push()
         noStroke()
-        fill("#577ED7")
+        fill("#5075DE")
         rect(barX, barY, barW, barH)
         pop()
 
