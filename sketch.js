@@ -442,6 +442,7 @@ function draw() {
     push()
     noFill()
     strokeWeight(2)
+    stroke((isScale)?100:0)
     strokeCap(SQUARE);
     line(width / 2 - logoWidth / 2, logoPosY - logoHeight / 2, width / 2 - logoWidth / 2, logoPosY + logoHeight / 2)
     line(width / 2 + logoWidth / 2, logoPosY - logoHeight / 2, width / 2 + logoWidth / 2, logoPosY + logoHeight / 2)
@@ -450,10 +451,9 @@ function draw() {
     // rect(width / 2, logoPosY, logoWidth, 40)
     noStroke()
     //grey
-    fill(178)
+    fill((isScale)?200:178)
     rect(width / 2, logoPosY - 5, logoWidth - 20, 10)
     rect(width / 2, logoPosY + 15, logoWidth - 20, 10)
-
     //blue
     fill('#0139D9')
     rect(barX, barY, barW, barH)
@@ -467,8 +467,11 @@ function draw() {
     }
 
     if (mouseIsPressed) {
-        if (mouseX > barX - barW / 2 && mouseX < barX + barW / 2 && mouseY > barY - barH / 2 && mouseY < barY + barH) {
+        // if (mouseX > barX - barW / 2 && mouseX < barX + barW / 2 && mouseY > barY - barH / 2 && mouseY < barY + barH) {
+        if (mouseX > width / 2 - logoWidth / 2 && mouseX < width / 2 + logoWidth / 2 && mouseY > logoPosY - logoHeight / 2 && mouseY < logoPosY + logoHeight / 2) {
             isScale = true;
+            rect(width/2,100,logoWidth,logoHeight)
+
         }
     }
     if (isScale) {
