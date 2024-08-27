@@ -119,13 +119,14 @@ class ImageManager {
   updatePositions() {
     // this.imageSpacing = map(mouseX, 0, width, 10, 80);
     this.newWidthWithSpacing = map(
-      mouseX,
+      abs(mouseX - width / 2),
       0,
-      width,
+      width / 2,
       this.widthWithSpacing,
       this.widthWithSpacing * 1.5,
       true
     );
+
     let totalWidth = this.calculateTotalWidth();
     this.startX = (width - this.newWidthWithSpacing) / 2;
     let xx = this.startX;
@@ -424,6 +425,7 @@ let imageManager1, imageManager2;
 //logo
 let logoWidth = 0;
 let logoTargetWidth = 0;
+let logoTargetHeight = 0;
 let barX = 0;
 let barY = 0;
 let barW = 0;
@@ -554,12 +556,18 @@ function draw() {
   //hint
   textSize(8);
   textFont("Verdana");
-  text("Hint: Drag the blue bar to scale", 10, 20);
+  text(
+    "Hint: Drag the logo to scale, drag the blue bar to change spacing",
+    10,
+    20
+  );
   //draw logo
+  let logoHeight = 40;
+
   logoWidth = lerp(logoWidth, logoTargetWidth, logoEasing);
+  //   logoHeight = lerp(logoHeight, logoTargetHeight, logoEasing);
 
   let logoPosY = height / 2 - 34;
-  let logoHeight = 40;
 
   //blue bar
   barX = lerp(barX, barTargetX, logoEasing);
@@ -626,17 +634,18 @@ function draw() {
       !isBarDrag
     ) {
       isScale = true;
-      rect(width / 2, 100, logoWidth, logoHeight);
     }
     isClicked = false;
   }
   if (isScale) {
+    barTargetX = width / 2;
     imageManager1.applyForces();
     imageManager2.applyForces();
     imageManager1.updatePositions();
     imageManager2.updatePositions();
     widthWithSpacing = imageManager1.getNewWidthWithSpacing();
     logoTargetWidth = widthWithSpacing;
+    logoTargetHeight = map(mouseY, height / 2, 0, logoHeight, logoHeight * 1.5);
   }
   if (isBarDrag) {
     push();
