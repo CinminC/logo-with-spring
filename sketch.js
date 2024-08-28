@@ -123,7 +123,7 @@ class ImageManager {
       0,
       width / 2,
       this.widthWithSpacing,
-      this.widthWithSpacing * 1.5,
+      this.widthWithSpacing * 1.8,
       true
     );
 
@@ -164,6 +164,7 @@ class ImageManager {
       }
 
       this.initialPositions[i].x = xx + imageWidth / 2;
+      //   this.initialPositions[i].y = mouseY;
       xx += imageWidth + this.imageSpacing;
     }
     this.constraints = [];
@@ -322,7 +323,7 @@ class ImageManager {
     for (let rectangle of this.rect) {
       Body.setVelocity(rectangle, {
         x: rectangle.velocity.x * (1 / damping),
-        y: rectangle.velocity.y,
+        y: rectangle.velocity.y * (1 / damping),
       });
     }
   }
@@ -425,7 +426,7 @@ let imageManager1, imageManager2;
 //logo
 let logoWidth = 0;
 let logoTargetWidth = 0;
-let logoTargetHeight = 0;
+let logoTargetHeight = 40;
 let barX = 0;
 let barY = 0;
 let barW = 0;
@@ -565,15 +566,15 @@ function draw() {
   let logoHeight = 40;
 
   logoWidth = lerp(logoWidth, logoTargetWidth, logoEasing);
-  //   logoHeight = lerp(logoHeight, logoTargetHeight, logoEasing);
+  logoHeight = lerp(logoHeight, logoTargetHeight, 0.8);
 
-  let logoPosY = height / 2 - 34;
+  let logoPosY = height / 2 - logoHeight / 2 - 14;
 
   //blue bar
   barX = lerp(barX, barTargetX, logoEasing);
-  barY = logoPosY + logoHeight / 8;
-  barW = logoHeight / 4;
-  barH = (logoHeight * 3) / 4;
+  barY = logoPosY + 5;
+  barW = 10;
+  barH = logoHeight - 10;
 
   push();
   noFill();
@@ -603,8 +604,8 @@ function draw() {
   noStroke();
   //grey
   fill(isScale ? 200 : 178);
-  rect(width / 2, logoPosY - 5, logoWidth - 20, 10);
-  rect(width / 2, logoPosY + 15, logoWidth - 20, 10);
+  rect(width / 2, logoPosY - logoHeight / 2 + 15, logoWidth - 20, 10);
+  rect(width / 2, logoPosY + logoHeight / 2 - 5, logoWidth - 20, 10);
   //blue
   fill("#0139D9");
   rect(barX, barY, barW, barH);
@@ -645,7 +646,7 @@ function draw() {
     imageManager2.updatePositions();
     widthWithSpacing = imageManager1.getNewWidthWithSpacing();
     logoTargetWidth = widthWithSpacing;
-    logoTargetHeight = map(mouseY, height / 2, 0, logoHeight, logoHeight * 1.5);
+    logoTargetHeight = map(mouseY, logoPosY, 0, 40, 160, true);
   }
   if (isBarDrag) {
     push();
