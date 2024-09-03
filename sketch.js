@@ -1,5 +1,5 @@
 class ImageManager {
-  constructor(imagePaths, startY, imageScale = 0.4, imageSpacing = 20) {
+  constructor(imagePaths, startY, imageScale = 0.1, imageSpacing = 20) {
     this.rect = [];
     this.initialPositions = [];
     this.constraints = [];
@@ -183,7 +183,7 @@ class ImageManager {
   }
 
   updateInnerPositions1() {
-    let newSpacingScale = map(mouseX, width / 2, width, 1, 0.5, true);
+    let newSpacingScale = map(mouseX, width / 2, width, 1, 0.35, true);
     let xx = this.startX;
     for (let i = 0; i < this.rect.length; i++) {
       let imageWidth = this.imageElements[i].width * this.imageScale;
@@ -217,7 +217,7 @@ class ImageManager {
   }
 
   updateInnerPositions2() {
-    let newSpacingScale = map(mouseX, 0, width / 2, 0.5, 1, true);
+    let newSpacingScale = map(mouseX, 0, width / 2, 0.3, 1, true);
     let xx = this.startX;
     for (let i = 0; i < this.rect.length; i++) {
       let imageWidth = this.imageElements[i].width * this.imageScale;
@@ -473,7 +473,7 @@ let GLOBAL = {
     height: 400,
     ratioFixed: true,
   },
-  pixelDensity: 2,
+  pixelDensity: 4,
 };
 
 // essential global functions
@@ -513,7 +513,7 @@ function preload() {
   imageManager2.preloadImages();
 }
 function setup() {
-  pixelDensity(2);
+  pixelDensity(4);
   createCanvas(whValue, whValue);
   fitCanvasSize();
 
@@ -529,7 +529,7 @@ function setup() {
   logoTargetWidth = widthWithSpacing;
   imageManager1.initialize(widthWithSpacing);
 
-  imageManager2.updatePosY(8);
+  imageManager2.updatePosY(5);
   imageManager2.initialize(widthWithSpacing);
 
   //blue bar
