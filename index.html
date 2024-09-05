@@ -1,46 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <script type="module">
+      import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
+      const gui = new GUI();
+      let userControl = {
+        damping: 1.18,
+        textEasing: 0.05,
+        logoEasing: 0.1,
+        force: 0.01,
+        stiffness: 0.05,
+        showTargetPosition: false,
+        attack: 0.2,
+        release: 0.5,
+        spread: 0.3,
+      };
 
-<head>
-  <script type="module">
-    import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
-    const gui = new GUI();
-    let userControl = { damping: 1.18, textEasing: 0.05, logoEasing: 0.1, force: 0.01, stiffness: 0.05, showTargetPosition: false }
+      const springFolder = gui.addFolder("Spring"); // 外观参数文件夹
+      const soundFolder = gui.addFolder("Sound"); // 位置参数文件夹
 
-    gui.add(userControl, 'damping', 1.05, 2, 0.01).onChange(value => {
-      guiDampingLerp(value);
-    });
-    gui.add(userControl, 'textEasing', 0.01, 0.4, 0.01).onChange(value => {
-      guiTextEasing(value);
-    });
-    gui.add(userControl, 'logoEasing', 0.1, 0.5, 0.01).onChange(value => {
-      guiLogoEasing(value);
-    });
-    gui.add(userControl, 'force', 0, 0.03, 0.01).onChange(value => {
-      guiForce(value);
-    });
-    gui.add(userControl, 'stiffness', 0.01, 0.1, 0.01).onChange(value => {
-      guiStiffness(value);
-    });
-    gui.add(userControl, 'showTargetPosition').onChange(value => {
-      guiShowPos(value);
-    });
+      springFolder
+        .add(userControl, "damping", 1.05, 2, 0.01)
+        .onChange((value) => {
+          guiDampingLerp(value);
+        });
+      springFolder
+        .add(userControl, "textEasing", 0.01, 0.4, 0.01)
+        .onChange((value) => {
+          guiTextEasing(value);
+        });
+      springFolder
+        .add(userControl, "logoEasing", 0.1, 0.5, 0.01)
+        .onChange((value) => {
+          guiLogoEasing(value);
+        });
+      springFolder
+        .add(userControl, "force", 0, 0.03, 0.01)
+        .onChange((value) => {
+          guiForce(value);
+        });
+      springFolder
+        .add(userControl, "stiffness", 0.01, 0.1, 0.01)
+        .onChange((value) => {
+          guiStiffness(value);
+        });
+      springFolder.add(userControl, "showTargetPosition").onChange((value) => {
+        guiShowPos(value);
+      });
+      soundFolder
+        .add(userControl, "attack", 0.1, 0.3, 0.01)
+        .onChange((value) => {
+          updateSoundSetting("attack", value);
+        });
+      soundFolder.add(userControl, "release", 0.5, 2, 0.1).onChange((value) => {
+        updateSoundSetting("release", value);
+      });
 
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <meta charset="utf-8" />
+      soundFolder
+        .add(userControl, "spread", 0.1, 0.7, 0.01)
+        .onChange((value) => {
+          updateSoundSetting("spread", value);
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta charset="utf-8" />
+  </head>
 
-</head>
-
-<body>
-  <main>
-  </main>
-  <script src="sketch.js"></script>
-  <script src="circle.js"></script>
-  <script src="boundary.js"></script>
-</body>
-
+  <body>
+    <main></main>
+    <script src="sketch.js"></script>
+    <script src="circle.js"></script>
+    <script src="boundary.js"></script>
+  </body>
 </html>

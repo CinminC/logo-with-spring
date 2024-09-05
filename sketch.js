@@ -91,7 +91,7 @@ class ImageManager {
   drawDebug() {
     for (let constraint of this.constraints) {
       push();
-      stroke(0);
+      stroke(50, 200);
       strokeWeight(2);
       line(
         constraint.bodyA.position.x,
@@ -104,7 +104,7 @@ class ImageManager {
     for (let img of this.imageElements) {
       let y = this.startY;
       push();
-      fill(20);
+      fill(50, 200);
       noStroke();
       rect(
         this.initialPositions[this.imageElements.indexOf(img)].x,
@@ -388,7 +388,7 @@ class ImageManager {
 }
 
 class Grain {
-  constructor(track) {
+  constructor(track, LengthMapping) {
     this.track = track;
     this.now = context.currentTime;
     this.source = context.createBufferSource();
@@ -400,9 +400,10 @@ class Grain {
     this.envelope.connect(master.input);
 
     this.positionX = mouseX;
-    this.positionY = mouseY;
+    this.positionY =
+      LengthMapping || map(mouseY, height / 2, 0, height / 2, 0, true);
     this.offset = map(this.positionX, 0, width, 0, track.buffer.duration());
-    this.amp = map(this.positionY, height, 0, 0, 0.7);
+    this.amp = map(this.positionY, height / 2, 0, 0, 0.7);
 
     this.randomOffset = random(
       -track.settings.spread / 2,
@@ -429,22 +430,19 @@ class Grain {
     this.envelope.gain.linearRampToValueAtTime(0, this.now + grainDuration);
 
     this.source.stop(this.now + grainDuration + 0.1);
-    push();
-    stroke(random(125, 255), random(250), random(250));
-    line(this.positionX, 0, this.positionX, height);
-    pop();
   }
 }
 
 class Voice {
-  constructor(track) {
+  constructor(track, LengthMapping) {
     this.track = track;
     this.grains = [];
     this.grainCount = 0;
+    this.LengthMapping = LengthMapping;
   }
 
   play() {
-    let grain = new Grain(this.track);
+    let grain = new Grain(this.track, this.LengthMapping);
     this.grains[this.grainCount] = grain;
     this.grainCount = (this.grainCount + 1) % 20;
 
@@ -505,6 +503,7 @@ let barTargetX = 0;
 let isScale = false;
 let isBarDrag = false;
 let isClicked = false;
+let isPlay = false;
 
 //slider
 let damping = 1.18;
@@ -518,6 +517,12 @@ let isShowPos = false;
 let context;
 let master;
 let tracks = [];
+let activeTracks = new Set();
+let activeTracksAmp = new Set();
+let attack = 0.2,
+  release = 0.5,
+  density = 1,
+  spread = 0.3;
 
 function guiDampingLerp(ratio) {
   damping = ratio;
@@ -613,7 +618,7 @@ function preload() {
     {
       buffer: loadSound("sound/Bs Cl.wav", () => fileLoaded(3)),
       key: "4",
-      filename: "Bs Cl",
+      filename: "Bs_Cl",
     },
     {
       buffer: loadSound("sound/Ce Solo.wav", () => fileLoaded(4)),
@@ -630,7 +635,7 @@ function preload() {
         fileLoaded(6)
       ),
       key: "7",
-      filename: "Crystal_Flight(Random",
+      filename: "Crystal_Flight(Random)",
     },
     {
       buffer: loadSound("sound/Glass Harp.wav", () => fileLoaded(7)),
@@ -718,12 +723,12 @@ function setup() {
     // track.isLoaded = false;
     track.voices = [];
     track.settings = {
-      attack: random(0.01, 0.5),
+      attack: attack,
       decay: random(0.1, 0.5),
       sustain: random(0.1, 0.8),
-      release: random(0.1, 1),
-      density: random(0.5, 1),
-      spread: random(0.1, 0.3),
+      release: release,
+      density: density,
+      spread: spread,
       pan: random(-0.5, 0.5),
       trans: random(0.8, 1.2),
     };
@@ -827,6 +832,22 @@ function draw() {
     widthWithSpacing = imageManager1.getNewWidthWithSpacing();
     logoTargetWidth = widthWithSpacing;
     logoTargetHeight = map(mouseY, logoPosY, 0, 40, 160, true);
+
+    // if (abs(pmouseX - mouseX) > 0) {
+    //   activeTracks.add("note_hor");
+    // }
+    // if (abs(pmouseY - mouseY) > 0) {
+    //   activeTracks.add("note_ver");
+    // }
+
+    //sound trigger
+    activeTracks.add("note_hor");
+    activeTracks.add("note_ver");
+
+    if (!isPlay) {
+      isPlay = true;
+      playSelectedTracks(Array.from(activeTracks));
+    }
   }
   if (isBarDrag) {
     push();
@@ -849,8 +870,49 @@ function draw() {
       imageManager2.updateInnerPositions2();
     }
     // barTargetX = map(mouseX, 0, width, width / 2 - 50, width / 2 + 50)
-  }
 
+    //sound trigger
+    activeTracks.add("note_blue");
+    if (!isPlay) {
+      isPlay = true;
+      playSelectedTracks(Array.from(activeTracks));
+
+      //VERTICAL
+      //low
+      playTrackWithAmp("Crystal_Flight(Lead)", 0);
+      playTrackWithAmp("Piano", 0);
+      //mid
+      playTrackWithAmp(
+        "Membrane_Bass",
+        map(logoHeight, 40, 136, height / 2, 0, true)
+      );
+      //high
+      playTrackWithAmp(
+        "Crystal_Flight(Random)",
+        map(logoHeight, 70, 136, height / 2, 0, true)
+      );
+
+      //HORIZONTAL
+      //low
+      playTrackWithAmp("StringPizz", 0);
+      playTrackWithAmp("Piano", 0);
+      //mid
+      playTrackWithAmp(
+        "Shunt(Pulse)",
+        map(logoWidth, 204, 367, height / 2, 0, true)
+      );
+      playTrackWithAmp("Bs_Cl", map(logoWidth, 204, 367, height / 2, 0, true));
+      //high
+      playTrackWithAmp(
+        "Vln _Solo",
+        map(logoWidth, 250, 367, height / 2, 0, true)
+      );
+      playTrackWithAmp(
+        "Ce_Solo",
+        map(logoWidth, 250, 367, height / 2, 0, true)
+      );
+    }
+  }
   // imageManager1.updatePositionsWhenStill();
   // imageManager2.updatePositionsWhenStill();
   // widthWithSpacing = imageManager1.getNewWidthWithSpacing()
@@ -877,42 +939,138 @@ function draw() {
   imageManager2.drawImages();
 }
 
+function playSelectedTracks(trackNames) {
+  let tracksToPlay = tracks.filter(
+    (t) => trackNames.includes(t.filename) && t.isLoaded
+  );
+
+  if (tracksToPlay.length > 0) {
+    tracksToPlay.forEach((track) => {
+      let voice = new Voice(track);
+      voice.play();
+      track.voices.push(voice);
+      // activeTracks.add(track.filename);
+    });
+    console.log(`Playing tracks: ${trackNames.join(", ")}`);
+  } else {
+    console.log("No valid tracks selected or tracks not loaded yet");
+  }
+}
+
+function playTrackWithAmp(trackNames, LengthMapping) {
+  let trackToPlay = tracks.find((t) => t.filename === trackNames);
+  if (trackToPlay != null) {
+    let voice = new Voice(trackToPlay, LengthMapping);
+    voice.play();
+    trackToPlay.voices.push(voice);
+    activeTracksAmp.add(trackToPlay.filename);
+    console.log(`Playing tracks(amp): ${trackNames}`);
+  } else {
+    console.log("No valid tracks(amp) selected or tracks not loaded yet");
+  }
+}
+
+function stopSelectedTracks(trackNames) {
+  tracks.forEach((track) => {
+    if (trackNames.includes(track.filename)) {
+      track.voices.forEach((voice) => voice.stop());
+      track.voices = [];
+      activeTracks.delete(track.filename);
+    }
+  });
+
+  if (activeTracks.size === 0) {
+    background(0);
+    text(
+      "Click to toggle playback. Press number keys to select tracks.",
+      width / 2,
+      height / 2
+    );
+  }
+
+  console.log(`Stopped tracks: ${trackNames.join(", ")}`);
+}
+
+function stopTracksWithAmp(trackNames) {
+  tracks.forEach((track) => {
+    if (trackNames.includes(track.filename)) {
+      track.voices.forEach((voice) => voice.stop());
+      track.voices = [];
+      activeTracksAmp.delete(track.filename);
+    }
+  });
+
+  console.log(`Stopped tracks(amp): ${trackNames.join(", ")}`);
+}
+
+function updateSoundSetting(param, v) {
+  if (param == "attack") attack = v;
+  if (param == "release") release = v;
+  if (param == "density") density = v;
+  if (param == "spread") spread = v;
+  tracks.forEach((track) => {
+    track.buffer.connect(master);
+    // track.isLoaded = false;
+    track.voices = [];
+    track.settings = {
+      attack: attack,
+      decay: random(0.1, 0.5),
+      sustain: random(0.1, 0.8),
+      release: release,
+      density: density,
+      spread: spread,
+      pan: random(-0.5, 0.5),
+      trans: random(0.8, 1.2),
+    };
+  });
+}
 function keyPressed() {
   if (key == " ") {
     showDebug = !showDebug;
     print("keyPressed");
   }
 
-  let track = tracks.find((t) => t.key === key);
-  if (track && track.isLoaded) {
-    let voice = new Voice(track);
-    voice.play();
-    track.voices.push(voice);
-  } else if (track && !track.isLoaded) {
-    console.log(`Track ${track.key} is not loaded yet`);
-  }
+  // let track = tracks.find((t) => t.key === key);
+  // if (track && track.isLoaded) {
+  //   let voice = new Voice(track);
+  //   voice.play();
+  //   track.voices.push(voice);
+  // } else if (track && !track.isLoaded) {
+  //   console.log(`Track ${track.key} is not loaded yet`);
+  // }
   print(key);
-}
 
-function keyReleased() {
   let track = tracks.find((t) => t.key === key);
   if (track) {
-    for (let voice of track.voices) {
-      voice.stop();
+    if (activeTracks.has(track.filename)) {
+      activeTracks.delete(track.filename);
+    } else {
+      activeTracks.add(track.filename);
     }
-    track.voices = [];
+    console.log(`Active tracks: ${Array.from(activeTracks).join(", ")}`);
   }
-  background(0);
-  text("Press keys 1, 2, 3 to trigger different sounds", width / 2, height / 2);
-  text("mouseX: position, mouseY: amplitude", width / 2, height / 2 + 25);
+  print(activeTracks);
 }
+
+// function keyReleased() {
+//   let track = tracks.find((t) => t.key === key);
+//   if (track) {
+//     for (let voice of track.voices) {
+//       voice.stop();
+//     }
+//     track.voices = [];
+//   }
+// }
 
 function mousePressed() {
   isClicked = true;
-  print("HO");
+  // playSelectedTracks(Array.from(activeTracks));
 }
 function mouseReleased() {
   isClicked = false;
   isScale = false;
   isBarDrag = false;
+  isPlay = false;
+  stopSelectedTracks(Array.from(activeTracks));
+  stopTracksWithAmp(Array.from(activeTracksAmp));
 }
