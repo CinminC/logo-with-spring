@@ -387,6 +387,76 @@ class ImageManager {
   }
 }
 
+class Grain {
+  constructor(track) {
+    this.track = track;
+    this.now = context.currentTime;
+    this.source = context.createBufferSource();
+    this.source.buffer = track.buffer.buffer;
+    this.source.playbackRate.value *= track.settings.trans;
+
+    this.envelope = context.createGain();
+    this.source.connect(this.envelope);
+    this.envelope.connect(master.input);
+
+    this.positionX = mouseX;
+    this.positionY = mouseY;
+    this.offset = map(this.positionX, 0, width, 0, track.buffer.duration());
+    this.amp = map(this.positionY, height, 0, 0, 0.7);
+
+    this.randomOffset = random(
+      -track.settings.spread / 2,
+      track.settings.spread / 2
+    );
+
+    let grainDuration =
+      track.settings.attack + track.settings.decay + track.settings.release;
+    this.source.start(
+      this.now,
+      max(0, this.offset + this.randomOffset),
+      grainDuration
+    );
+
+    this.envelope.gain.setValueAtTime(0, this.now);
+    this.envelope.gain.linearRampToValueAtTime(
+      this.amp,
+      this.now + track.settings.attack
+    );
+    this.envelope.gain.linearRampToValueAtTime(
+      this.amp * track.settings.sustain,
+      this.now + track.settings.attack + track.settings.decay
+    );
+    this.envelope.gain.linearRampToValueAtTime(0, this.now + grainDuration);
+
+    this.source.stop(this.now + grainDuration + 0.1);
+    push();
+    stroke(random(125, 255), random(250), random(250));
+    line(this.positionX, 0, this.positionX, height);
+    pop();
+  }
+}
+
+class Voice {
+  constructor(track) {
+    this.track = track;
+    this.grains = [];
+    this.grainCount = 0;
+  }
+
+  play() {
+    let grain = new Grain(this.track);
+    this.grains[this.grainCount] = grain;
+    this.grainCount = (this.grainCount + 1) % 20;
+
+    let interval = map(this.track.settings.density, 1, 0, 70, 570);
+    this.timeout = setTimeout(() => this.play(), interval);
+  }
+
+  stop() {
+    clearTimeout(this.timeout);
+  }
+}
+
 const {
   Engine,
   World,
@@ -443,6 +513,11 @@ let logoEasing = 0.1;
 let force = 0.01;
 let stiffness = 0.05;
 let isShowPos = false;
+
+//sound
+let context;
+let master;
+let tracks = [];
 
 function guiDampingLerp(ratio) {
   damping = ratio;
@@ -505,12 +580,99 @@ function windowResized() {
   fitCanvasSize();
 }
 
+function fileLoaded(index) {
+  console.log(`File ${index} loaded`);
+  tracks[index].isLoaded = true;
+}
+
 function preload() {
   imageManager1 = new ImageManager(imagePaths, whValue / 2);
   imageManager2 = new ImageManager(imagePaths2, whValue / 2);
 
   imageManager1.preloadImages();
   imageManager2.preloadImages();
+
+  soundFormats("wav");
+  // Load multiple sound files
+  tracks = [
+    {
+      buffer: loadSound("sound/note_blue.wav", () => fileLoaded(0)),
+      key: "1",
+      filename: "note_blue",
+    },
+    {
+      buffer: loadSound("sound/note_hor.wav", () => fileLoaded(1)),
+      key: "2",
+      filename: "note_hor",
+    },
+    {
+      buffer: loadSound("sound/note_ver.wav", () => fileLoaded(2)),
+      key: "3",
+      filename: "note_ver",
+    },
+    {
+      buffer: loadSound("sound/Bs Cl.wav", () => fileLoaded(3)),
+      key: "4",
+      filename: "Bs Cl",
+    },
+    {
+      buffer: loadSound("sound/Ce Solo.wav", () => fileLoaded(4)),
+      key: "5",
+      filename: "Ce_Solo",
+    },
+    {
+      buffer: loadSound("sound/Crystal Flight(Lead).wav", () => fileLoaded(5)),
+      key: "6",
+      filename: "Crystal_Flight(Lead)",
+    },
+    {
+      buffer: loadSound("sound/Crystal Flight(Random).wav", () =>
+        fileLoaded(6)
+      ),
+      key: "7",
+      filename: "Crystal_Flight(Random",
+    },
+    {
+      buffer: loadSound("sound/Glass Harp.wav", () => fileLoaded(7)),
+      key: "8",
+      filename: "Glass_Harp",
+    },
+    {
+      buffer: loadSound("sound/Glitch1.wav", () => fileLoaded(8)),
+      key: "9",
+      filename: "Glitch1",
+    },
+    {
+      buffer: loadSound("sound/Glitch2.wav", () => fileLoaded(9)),
+      key: "10",
+      filename: "Glitch2",
+    },
+    {
+      buffer: loadSound("sound/Membrane (Bass).wav", () => fileLoaded(10)),
+      key: "q",
+      filename: "Membrane_Bass",
+    },
+    {
+      buffer: loadSound("sound/Piano.wav", () => fileLoaded(11)),
+      key: "w",
+      filename: "Piano",
+    },
+    {
+      buffer: loadSound("sound/Shunt(Pulse).wav", () => fileLoaded(12)),
+      key: "e",
+      filename: "Shunt(Pulse)",
+    },
+    {
+      buffer: loadSound("sound/StringPizz.wav", () => fileLoaded(13)),
+      key: "r",
+      filename: "StringPizz",
+    },
+    {
+      buffer: loadSound("sound/Vln Solo.wav", () => fileLoaded(14)),
+      key: "t",
+      filename: "Vln _Solo",
+    },
+  ];
 }
 function setup() {
   pixelDensity(4);
@@ -546,8 +708,26 @@ function setup() {
   };
   canvasMouse.pixelRatio = pixelDensity();
 
-  // mConstraint = MouseConstraint.create(engine, options);
-  // World.add(world, mConstraint);
+  context = getAudioContext();
+  master = new p5.Gain();
+  master.connect();
+
+  // Initialize each track with default settings
+  tracks.forEach((track) => {
+    track.buffer.connect(master);
+    // track.isLoaded = false;
+    track.voices = [];
+    track.settings = {
+      attack: random(0.01, 0.5),
+      decay: random(0.1, 0.5),
+      sustain: random(0.1, 0.8),
+      release: random(0.1, 1),
+      density: random(0.5, 1),
+      spread: random(0.1, 0.3),
+      pan: random(-0.5, 0.5),
+      trans: random(0.8, 1.2),
+    };
+  });
 }
 
 function draw() {
@@ -702,6 +882,29 @@ function keyPressed() {
     showDebug = !showDebug;
     print("keyPressed");
   }
+
+  let track = tracks.find((t) => t.key === key);
+  if (track && track.isLoaded) {
+    let voice = new Voice(track);
+    voice.play();
+    track.voices.push(voice);
+  } else if (track && !track.isLoaded) {
+    console.log(`Track ${track.key} is not loaded yet`);
+  }
+  print(key);
+}
+
+function keyReleased() {
+  let track = tracks.find((t) => t.key === key);
+  if (track) {
+    for (let voice of track.voices) {
+      voice.stop();
+    }
+    track.voices = [];
+  }
+  background(0);
+  text("Press keys 1, 2, 3 to trigger different sounds", width / 2, height / 2);
+  text("mouseX: position, mouseY: amplitude", width / 2, height / 2 + 25);
 }
 
 function mousePressed() {
