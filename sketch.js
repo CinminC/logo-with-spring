@@ -399,7 +399,7 @@ class Grain {
     this.source.connect(this.envelope);
     this.envelope.connect(master.input);
 
-    this.positionX = mouseX;
+    this.positionX = width / 2; //pos= center, spread= audio duration
     this.positionY =
       LengthMapping || map(mouseY, height / 2, 0, height / 2, 0, true);
     this.offset = map(this.positionX, 0, width, 0, track.buffer.duration());
@@ -516,13 +516,14 @@ let isShowPos = false;
 //sound
 let context;
 let master;
+let compressor;
 let tracks = [];
 let activeTracks = new Set();
 let activeTracksAmp = new Set();
 let attack = 0.2,
   release = 0.5,
-  density = 1,
-  spread = 0.3;
+  density = 1;
+let noteBlue;
 
 function guiDampingLerp(ratio) {
   damping = ratio;
@@ -678,6 +679,8 @@ function preload() {
       filename: "Vln _Solo",
     },
   ];
+
+  noteBlue = loadSound("sound/note_blue.wav");
 }
 function setup() {
   pixelDensity(4);
@@ -715,10 +718,24 @@ function setup() {
 
   context = getAudioContext();
   master = new p5.Gain();
+
+  // compressor = new p5.Compressor();
+  // compressor.threshold(-30);
+  // compressor.ratio(30);
+  // compressor.attack(0.001);
+  // compressor.release(0.1);
+  // compressor.connect();
+
+  // master.connect(compressor);
   master.connect();
+
+  noteBlue.setVolume(0.7);
+  // noteBlue.disconnect();
+  // noteBlue.connect(master);
 
   // Initialize each track with default settings
   tracks.forEach((track) => {
+    // track.buffer.disconnect();
     track.buffer.connect(master);
     // track.isLoaded = false;
     track.voices = [];
@@ -728,7 +745,7 @@ function setup() {
       sustain: random(0.1, 0.8),
       release: release,
       density: density,
-      spread: spread,
+      spread: track.buffer.duration(),
       pan: random(-0.5, 0.5),
       trans: random(0.8, 1.2),
     };
@@ -872,11 +889,15 @@ function draw() {
     // barTargetX = map(mouseX, 0, width, width / 2 - 50, width / 2 + 50)
 
     //sound trigger
-    activeTracks.add("note_blue");
     if (!isPlay) {
       isPlay = true;
-      playSelectedTracks(Array.from(activeTracks));
 
+      //original audio, play once
+      if (noteBlue.isLoaded()) {
+        noteBlue.play();
+      }
+
+      //Grain
       //VERTICAL
       //low
       playTrackWithAmp("Crystal_Flight(Lead)", 0);
@@ -1007,7 +1028,6 @@ function updateSoundSetting(param, v) {
   if (param == "attack") attack = v;
   if (param == "release") release = v;
   if (param == "density") density = v;
-  if (param == "spread") spread = v;
   tracks.forEach((track) => {
     track.buffer.connect(master);
     // track.isLoaded = false;
@@ -1018,7 +1038,7 @@ function updateSoundSetting(param, v) {
       sustain: random(0.1, 0.8),
       release: release,
       density: density,
-      spread: spread,
+      spread: track.buffer.duration(),
       pan: random(-0.5, 0.5),
       trans: random(0.8, 1.2),
     };
