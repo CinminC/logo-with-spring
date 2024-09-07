@@ -522,7 +522,8 @@ let activeTracks = new Set();
 let activeTracksAmp = new Set();
 let attack = 0.2,
   release = 0.5,
-  density = 1;
+  density = 1,
+  spread = 0.1;
 let noteBlue;
 
 function guiDampingLerp(ratio) {
@@ -1028,6 +1029,7 @@ function updateSoundSetting(param, v) {
   if (param == "attack") attack = v;
   if (param == "release") release = v;
   if (param == "density") density = v;
+  if (param == "density") density = spread;
   tracks.forEach((track) => {
     track.buffer.connect(master);
     // track.isLoaded = false;
@@ -1047,7 +1049,6 @@ function updateSoundSetting(param, v) {
 function keyPressed() {
   if (key == " ") {
     showDebug = !showDebug;
-    print("keyPressed");
   }
 
   // let track = tracks.find((t) => t.key === key);
@@ -1069,18 +1070,19 @@ function keyPressed() {
     }
     console.log(`Active tracks: ${Array.from(activeTracks).join(", ")}`);
   }
-  print(activeTracks);
+  playSelectedTracks(Array.from(activeTracks));
 }
 
-// function keyReleased() {
-//   let track = tracks.find((t) => t.key === key);
-//   if (track) {
-//     for (let voice of track.voices) {
-//       voice.stop();
-//     }
-//     track.voices = [];
-//   }
-// }
+function keyReleased() {
+  let track = tracks.find((t) => t.key === key);
+  if (track) {
+    for (let voice of track.voices) {
+      voice.stop();
+    }
+    track.voices = [];
+  }
+  stopSelectedTracks(Array.from(activeTracks));
+}
 
 function mousePressed() {
   isClicked = true;
