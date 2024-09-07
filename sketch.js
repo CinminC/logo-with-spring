@@ -522,8 +522,7 @@ let activeTracks = new Set();
 let activeTracksAmp = new Set();
 let attack = 0.2,
   release = 0.5,
-  density = 1,
-  spread = 0.1;
+  density = 1;
 let noteBlue;
 
 function guiDampingLerp(ratio) {
@@ -1029,7 +1028,6 @@ function updateSoundSetting(param, v) {
   if (param == "attack") attack = v;
   if (param == "release") release = v;
   if (param == "density") density = v;
-  if (param == "density") density = spread;
   tracks.forEach((track) => {
     track.buffer.connect(master);
     // track.isLoaded = false;

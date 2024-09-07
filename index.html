@@ -13,7 +13,6 @@
         showTargetPosition: false,
         attack: 0.2,
         release: 0.5,
-        spread: 0.1,
       };
 
       const springFolder = gui.addFolder("Spring"); // 外观参数文件夹
@@ -56,11 +55,6 @@
         .add(userControl, "release", 0.2, 2, 0.01)
         .onChange((value) => {
           updateSoundSetting("release", value);
-        });
-      soundFolder
-        .add(userControl, "spread", 0.1, 0.4, 0.01)
-        .onChange((value) => {
-          updateSoundSetting("spread", value);
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
