@@ -747,7 +747,7 @@ function setup() {
       density: density,
       spread: track.buffer.duration(),
       pan: random(-0.5, 0.5),
-      trans: random(0.8, 1.2),
+      trans: 1,
     };
   });
 }
@@ -1040,7 +1040,7 @@ function updateSoundSetting(param, v) {
       density: density,
       spread: track.buffer.duration(),
       pan: random(-0.5, 0.5),
-      trans: random(0.8, 1.2),
+      trans: 1,
     };
   });
 }
