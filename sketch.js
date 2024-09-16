@@ -595,7 +595,7 @@ function fileLoaded(index) {
   tracks[index].isLoaded = true;
 }
 
-function preload() {
+async function preload() {
   imageManager1 = new ImageManager(imagePaths, whValue / 2);
   imageManager2 = new ImageManager(imagePaths2, whValue / 2);
 
@@ -603,89 +603,85 @@ function preload() {
   imageManager2.preloadImages();
 
   soundFormats("wav");
-  // Load multiple sound files
-  tracks = [
-    {
-      buffer: loadSound("sound/note_blue.wav", () => fileLoaded(0)),
-      key: "1",
-      filename: "note_blue",
-    },
-    {
-      buffer: loadSound("sound/note_hor.wav", () => fileLoaded(1)),
-      key: "2",
-      filename: "note_hor",
-    },
-    {
-      buffer: loadSound("sound/note_ver.wav", () => fileLoaded(2)),
-      key: "3",
-      filename: "note_ver",
-    },
-    {
-      buffer: loadSound("sound/Bs Cl.wav", () => fileLoaded(3)),
-      key: "4",
-      filename: "Bs_Cl",
-    },
-    {
-      buffer: loadSound("sound/Ce Solo.wav", () => fileLoaded(4)),
-      key: "5",
-      filename: "Ce_Solo",
-    },
-    {
-      buffer: loadSound("sound/Crystal Flight(Lead).wav", () => fileLoaded(5)),
-      key: "6",
-      filename: "Crystal_Flight(Lead)",
-    },
-    {
-      buffer: loadSound("sound/Crystal Flight(Random).wav", () =>
-        fileLoaded(6)
-      ),
-      key: "7",
-      filename: "Crystal_Flight(Random)",
-    },
-    {
-      buffer: loadSound("sound/Glass Harp.wav", () => fileLoaded(7)),
-      key: "8",
-      filename: "Glass_Harp",
-    },
-    {
-      buffer: loadSound("sound/Glitch1.wav", () => fileLoaded(8)),
-      key: "9",
-      filename: "Glitch1",
-    },
-    {
-      buffer: loadSound("sound/Glitch2.wav", () => fileLoaded(9)),
-      key: "10",
-      filename: "Glitch2",
-    },
-    {
-      buffer: loadSound("sound/Membrane (Bass).wav", () => fileLoaded(10)),
-      key: "q",
-      filename: "Membrane_Bass",
-    },
-    {
-      buffer: loadSound("sound/Piano.wav", () => fileLoaded(11)),
-      key: "w",
-      filename: "Piano",
-    },
-    {
-      buffer: loadSound("sound/Shunt(Pulse).wav", () => fileLoaded(12)),
-      key: "e",
-      filename: "Shunt(Pulse)",
-    },
-    {
-      buffer: loadSound("sound/StringPizz.wav", () => fileLoaded(13)),
-      key: "r",
-      filename: "StringPizz",
-    },
-    {
-      buffer: loadSound("sound/Vln Solo.wav", () => fileLoaded(14)),
-      key: "t",
-      filename: "Vln _Solo",
-    },
+
+  const soundFiles = [
+    "note_blue",
+    "note_hor",
+    "note_ver",
+    "Bs Cl",
+    "Ce Solo",
+    "Crystal Flight(Lead)",
+    "Crystal Flight(Random)",
+    "Glass Harp",
+    "Glitch1",
+    "Glitch2",
+    "Membrane (Bass)",
+    "Piano",
+    "Shunt(Pulse)",
+    "StringPizz",
+    "Vln Solo",
   ];
 
-  noteBlue = loadSound("sound/note_blue.wav");
+  const keys = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "q",
+    "w",
+    "e",
+    "r",
+    "t",
+  ];
+
+  tracks = soundFiles.map((file, index) => ({
+    key: keys[index],
+    filename: file.replace(/\s+/g, "_"),
+  }));
+
+  function loadSoundPromise(url) {
+    return new Promise((resolve, reject) => {
+      loadSound(
+        url,
+        (buffer) => resolve(buffer),
+        (error) => reject(new Error(`Failed to load ${url}: ${error}`))
+      );
+    });
+  }
+
+  try {
+    await Promise.all(
+      tracks.map(async (track, index) => {
+        const buffer = await loadSoundPromise(`sound/${soundFiles[index]}.wav`);
+        track.buffer = buffer;
+        console.log(`Loaded: ${track.filename}`);
+
+        // If this is the "note_blue" sound, assign it to noteBlue
+        if (track.filename === "note_blue") {
+          noteBlue = buffer;
+        }
+      })
+    );
+
+    console.log("All sounds loaded successfully");
+
+    // Double-check that noteBlue is loaded
+    if (!noteBlue) {
+      noteBlue = await loadSoundPromise("sound/note_blue.wav");
+      console.log("noteBlue loaded separately");
+    }
+  } catch (error) {
+    console.error("Error loading sounds:", error);
+  }
+  // noteBlue = loadSound("sound/note_blue.wav");
 }
+
 function setup() {
   pixelDensity(4);
   createCanvas(whValue, whValue);
