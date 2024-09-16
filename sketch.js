@@ -527,6 +527,7 @@ let activeTracksAmp = new Set();
 let attack = 0.2,
   release = 0.5,
   density = 1;
+let isPanRandom = true;
 let noteBlue;
 
 function guiDampingLerp(ratio) {
@@ -1030,6 +1031,7 @@ function updateSoundSetting(param, v) {
   if (param == "attack") attack = v;
   if (param == "release") release = v;
   if (param == "density") density = v;
+  if (param == "pan") isPanRandom = v;
   tracks.forEach((track) => {
     track.buffer.connect(master);
     // track.isLoaded = false;
@@ -1041,7 +1043,7 @@ function updateSoundSetting(param, v) {
       release: release,
       density: density,
       spread: track.buffer.duration(),
-      pan: random(-0.5, 0.5),
+      pan: isPanRandom ? random(-0.5, 0.5) : 0,
       trans: 1,
     };
   });
