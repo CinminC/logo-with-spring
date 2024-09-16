@@ -388,7 +388,7 @@ class ImageManager {
 }
 
 class Grain {
-  constructor(track, LengthMapping) {
+  constructor(track, LengthMapping, isHor) {
     this.track = track;
     this.now = context.currentTime;
     this.source = context.createBufferSource();
@@ -399,11 +399,14 @@ class Grain {
     this.source.connect(this.envelope);
     this.envelope.connect(master.input);
 
+    this.isHor = isHor; //for switching mapping value when dragging grey area
     this.positionX = width / 2; //pos= center, spread= audio duration
     this.positionY =
-      LengthMapping || map(mouseY, height / 2, 0, height / 2, 0, true);
+      LengthMapping || this.isHor
+        ? map(logoWidth, 204, 367, height / 2, 0, true)
+        : map(mouseY, height / 2, 0, height / 2, 0, true);
     this.offset = map(this.positionX, 0, width, 0, track.buffer.duration());
-    this.amp = map(this.positionY, height / 2, 0, 0, 0.7);
+    this.amp = map(this.positionY, height / 2, 0, 0.05, 0.7);
 
     this.randomOffset = random(
       -track.settings.spread / 2,
@@ -434,15 +437,16 @@ class Grain {
 }
 
 class Voice {
-  constructor(track, LengthMapping) {
+  constructor(track, LengthMapping, isHor) {
     this.track = track;
     this.grains = [];
     this.grainCount = 0;
     this.LengthMapping = LengthMapping;
+    this.isHor = isHor;
   }
 
   play() {
-    let grain = new Grain(this.track, this.LengthMapping);
+    let grain = new Grain(this.track, this.LengthMapping, this.isHor);
     this.grains[this.grainCount] = grain;
     this.grainCount = (this.grainCount + 1) % 20;
 
@@ -729,7 +733,7 @@ function setup() {
   // master.connect(compressor);
   master.connect();
 
-  noteBlue.setVolume(0.7);
+  noteBlue.setVolume(0.5);
   // noteBlue.disconnect();
   // noteBlue.connect(master);
 
@@ -858,12 +862,10 @@ function draw() {
     // }
 
     //sound trigger
-    activeTracks.add("note_hor");
-    activeTracks.add("note_ver");
-
     if (!isPlay) {
       isPlay = true;
-      playSelectedTracks(Array.from(activeTracks));
+      playTrackWithAmp("note_hor", null, true);
+      playTrackWithAmp("note_ver", null, false);
     }
   }
   if (isBarDrag) {
@@ -899,7 +901,7 @@ function draw() {
 
       //Grain
       //VERTICAL
-      //low
+      //low: always 100%
       playTrackWithAmp("Crystal_Flight(Lead)", 0);
       playTrackWithAmp("Piano", 0);
       //mid
@@ -914,20 +916,20 @@ function draw() {
       );
 
       //HORIZONTAL
-      //low
-      playTrackWithAmp("StringPizz", 0);
-      playTrackWithAmp("Piano", 0);
-      //mid
-      playTrackWithAmp(
-        "Shunt(Pulse)",
-        map(logoWidth, 204, 367, height / 2, 0, true)
-      );
-      playTrackWithAmp("Bs_Cl", map(logoWidth, 204, 367, height / 2, 0, true));
-      //high
+      //low: always 100%
       playTrackWithAmp(
         "Vln _Solo",
         map(logoWidth, 250, 367, height / 2, 0, true)
       );
+      playTrackWithAmp("Piano", 0);
+      //mid
+      playTrackWithAmp("StringPizz", 0);
+      playTrackWithAmp(
+        "Shunt(Pulse)",
+        map(logoWidth, 204, 367, height / 2, 0, true)
+      );
+      //high
+      playTrackWithAmp("Bs_Cl", map(logoWidth, 204, 367, height / 2, 0, true));
       playTrackWithAmp(
         "Ce_Solo",
         map(logoWidth, 250, 367, height / 2, 0, true)
@@ -967,7 +969,7 @@ function playSelectedTracks(trackNames) {
 
   if (tracksToPlay.length > 0) {
     tracksToPlay.forEach((track) => {
-      let voice = new Voice(track);
+      let voice = new Voice(track, null);
       voice.play();
       track.voices.push(voice);
       // activeTracks.add(track.filename);
@@ -978,10 +980,10 @@ function playSelectedTracks(trackNames) {
   }
 }
 
-function playTrackWithAmp(trackNames, LengthMapping) {
+function playTrackWithAmp(trackNames, LengthMapping, isHor) {
   let trackToPlay = tracks.find((t) => t.filename === trackNames);
   if (trackToPlay != null) {
-    let voice = new Voice(trackToPlay, LengthMapping);
+    let voice = new Voice(trackToPlay, LengthMapping, isHor);
     voice.play();
     trackToPlay.voices.push(voice);
     activeTracksAmp.add(trackToPlay.filename);
