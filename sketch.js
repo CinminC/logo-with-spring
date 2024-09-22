@@ -603,89 +603,89 @@ function preload() {
   imageManager1.preloadImages();
   imageManager2.preloadImages();
 
-  soundFormats("wav");
+  soundFormats("mp3");
   // Load multiple sound files
   tracks = [
     {
-      buffer: loadSound("sound/note_blue.wav", () => fileLoaded(0)),
+      buffer: loadSound("sound/note_blue.mp3", () => fileLoaded(0)),
       key: "1",
       filename: "note_blue",
     },
     {
-      buffer: loadSound("sound/note_hor.wav", () => fileLoaded(1)),
+      buffer: loadSound("sound/note_hor.mp3", () => fileLoaded(1)),
       key: "2",
       filename: "note_hor",
     },
     {
-      buffer: loadSound("sound/note_ver.wav", () => fileLoaded(2)),
+      buffer: loadSound("sound/note_ver.mp3", () => fileLoaded(2)),
       key: "3",
       filename: "note_ver",
     },
     {
-      buffer: loadSound("sound/Bs Cl.wav", () => fileLoaded(3)),
+      buffer: loadSound("sound/Bs Cl.mp3", () => fileLoaded(3)),
       key: "4",
       filename: "Bs_Cl",
     },
     {
-      buffer: loadSound("sound/Ce Solo.wav", () => fileLoaded(4)),
+      buffer: loadSound("sound/Ce Solo.mp3", () => fileLoaded(4)),
       key: "5",
       filename: "Ce_Solo",
     },
     {
-      buffer: loadSound("sound/Crystal Flight(Lead).wav", () => fileLoaded(5)),
+      buffer: loadSound("sound/Crystal Flight(Lead).mp3", () => fileLoaded(5)),
       key: "6",
       filename: "Crystal_Flight(Lead)",
     },
     {
-      buffer: loadSound("sound/Crystal Flight(Random).wav", () =>
+      buffer: loadSound("sound/Crystal Flight(Random).mp3", () =>
         fileLoaded(6)
       ),
       key: "7",
       filename: "Crystal_Flight(Random)",
     },
     {
-      buffer: loadSound("sound/Glass Harp.wav", () => fileLoaded(7)),
+      buffer: loadSound("sound/Glass Harp.mp3", () => fileLoaded(7)),
       key: "8",
       filename: "Glass_Harp",
     },
     {
-      buffer: loadSound("sound/Glitch1.wav", () => fileLoaded(8)),
+      buffer: loadSound("sound/Glitch1.mp3", () => fileLoaded(8)),
       key: "9",
       filename: "Glitch1",
     },
     {
-      buffer: loadSound("sound/Glitch2.wav", () => fileLoaded(9)),
+      buffer: loadSound("sound/Glitch2.mp3", () => fileLoaded(9)),
       key: "10",
       filename: "Glitch2",
     },
     {
-      buffer: loadSound("sound/Membrane (Bass).wav", () => fileLoaded(10)),
+      buffer: loadSound("sound/Membrane (Bass).mp3", () => fileLoaded(10)),
       key: "q",
       filename: "Membrane_Bass",
     },
     {
-      buffer: loadSound("sound/Piano.wav", () => fileLoaded(11)),
+      buffer: loadSound("sound/Piano.mp3", () => fileLoaded(11)),
       key: "w",
       filename: "Piano",
     },
     {
-      buffer: loadSound("sound/Shunt(Pulse).wav", () => fileLoaded(12)),
+      buffer: loadSound("sound/Shunt(Pulse).mp3", () => fileLoaded(12)),
       key: "e",
       filename: "Shunt(Pulse)",
     },
     {
-      buffer: loadSound("sound/StringPizz.wav", () => fileLoaded(13)),
+      buffer: loadSound("sound/StringPizz.mp3", () => fileLoaded(13)),
       key: "r",
       filename: "StringPizz",
     },
     {
-      buffer: loadSound("sound/Vln Solo.wav", () => fileLoaded(14)),
+      buffer: loadSound("sound/Vln Solo.mp3", () => fileLoaded(14)),
       key: "t",
       filename: "Vln _Solo",
     },
   ];
 
-  noteBlue = loadSound("sound/note_blue.wav");
+  noteBlue = loadSound("sound/note_blue.mp3");
 }
 function setup() {
   pixelDensity(4);
