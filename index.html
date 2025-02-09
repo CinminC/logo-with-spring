@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module">
       import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
       const gui = new GUI();
@@ -60,13 +62,76 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+      .sketch-container {
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      canvas {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .active canvas {
+        opacity: 1;
+      }
+    </style>
   </head>
 
   <body>
     <main></main>
+    <div id="sketch1" class="sketch-container"></div>
+    <div id="sketch2" class="sketch-container"></div>
+
+    <script>
+      // const sketches = [];
+      // new p5(function (p) {
+      //   p.setup = function () {
+      //     const canvas = p.createCanvas(400, 400);
+      //     canvas.parent("sketch3");
+      //   };
+      //   p.draw = function () {
+      //     p.background(0, 0, 255);
+      //     p.triangle(
+      //       p.width / 2,
+      //       p.height / 4,
+      //       p.width / 4,
+      //       (p.height * 3) / 4,
+      //       (p.width * 3) / 4,
+      //       (p.height * 3) / 4
+      //     );
+      //   };
+      // });
+
+      // Handle scroll events
+      window.addEventListener("scroll", function () {
+        const containers = document.querySelectorAll(".sketch-container");
+        containers.forEach((container, index) => {
+          const rect = container.getBoundingClientRect();
+          const isVisible =
+            rect.top < window.innerHeight / 2 &&
+            rect.bottom > window.innerHeight / 2;
+          container.classList.toggle("active", isVisible);
+        });
+      });
+
+      // Trigger initial scroll check
+      window.dispatchEvent(new Event("scroll"));
+    </script>
     <script src="sketch.js"></script>
+    <script src="sketch2.js"></script>
     <script src="circle.js"></script>
     <script src="boundary.js"></script>
   </body>
