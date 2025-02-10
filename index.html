@@ -6,58 +6,163 @@
     <script type="module">
       import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
       const gui = new GUI();
+      // gui.width = 320;
+      gui.domElement.style.background = "rgba(255, 255, 255, 0.9)";
+      // gui.domElement.style.color = "white";
+      // gui.domElement.style.borderRadius = "8px";
+
+      // Add custom styles for GUI track and thumb
+      const style = document.createElement("style");
+      style.textContent = `
+            .lil-gui {
+            left: 0px;
+              border: 1px solid rgba(178, 178, 178, 0.9) !important; /* Border stroke */
+            }
+            .lil-gui .title {
+              color: rgba(50, 50, 50, 0.9);
+            }
+            .lil-gui .title:hover {
+              color: white !important;
+            }
+            .lil-gui .controller .name {
+              color: rgba(50, 50, 50, 0.9) !important;
+            }
+            .lil-gui .controller.number .widget input {
+              color: #ffffff !important; /* Value text color */
+              background: #666 !important; /* Value background color */
+              padding: 2px 4px !important;
+            }
+            .lil-gui .slider {
+              background-color: #b2b2b2 !important; /* Track color */
+            }
+
+            .lil-gui .slider-fg {
+              background-color: #000 !important; /* Fill color */
+            }
+            .lil-gui .slider:hover,
+            .lil-gui .slider.active {
+              background-color: #C8C8C8 !important; /* Track color on hover/active */
+            }
+            .lil-gui .slider .thumb {
+              background-color: #ffffff !important; /* Thumb color */
+              border: 2px solid #7794E4 !important; /* Thumb border */
+            }
+                      .lil-gui .slider .fill {
+              background-color: #0139D9 !important; /* Changed thumb color */
+            }
+            /* Ensure container is full width */
+            // .lil-gui .controller {
+            //   display: block !important;
+            //   width: 100% !important;
+            // }
+          `;
+      document.head.appendChild(style);
+
       let userControl = {
-        damping: 1.18,
-        textEasing: 0.05,
-        logoEasing: 0.1,
-        force: 0.01,
-        stiffness: 0.05,
-        showTargetPosition: false,
+        Damping: 1.18,
+        TextEasing: 0.05,
+        LogoEasing: 0.1,
+        Force: 0.01,
+        Stiffness: 0.05,
+        TargetPosition: false,
         attack: 0.2,
         release: 0.5,
         isPanRandom: true,
       };
 
-      const springFolder = gui.addFolder("Spring"); // 外观参数文件夹
-      const soundFolder = gui.addFolder("Sound"); // 位置参数文件夹
+      const springFolder = gui.addFolder("Spring");
+      const easingFolder = gui.addFolder("Easing");
+      const showFolder = gui.addFolder("Show");
+      // const soundFolder = gui.addFolder("Sound");
 
       springFolder
-        .add(userControl, "damping", 1.05, 2, 0.01)
+        .add(userControl, "Damping", 1.05, 2, 0.01)
         .onChange((value) => {
           guiDampingLerp(value);
         });
+
       springFolder
-        .add(userControl, "textEasing", 0.01, 0.4, 0.01)
-        .onChange((value) => {
-          guiTextEasing(value);
-        });
-      springFolder
-        .add(userControl, "logoEasing", 0.1, 0.5, 0.01)
-        .onChange((value) => {
-          guiLogoEasing(value);
-        });
-      springFolder
-        .add(userControl, "force", 0, 0.03, 0.01)
+        .add(userControl, "Force", 0, 0.03, 0.01)
         .onChange((value) => {
           guiForce(value);
         });
       springFolder
-        .add(userControl, "stiffness", 0.01, 0.1, 0.01)
+        .add(userControl, "Stiffness", 0.01, 0.1, 0.01)
         .onChange((value) => {
           guiStiffness(value);
         });
-      springFolder.add(userControl, "showTargetPosition").onChange((value) => {
+      easingFolder
+        .add(userControl, "TextEasing", 0.01, 0.4, 0.01)
+        .onChange((value) => {
+          guiTextEasing(value);
+        });
+      easingFolder
+        .add(userControl, "LogoEasing", 0.1, 0.5, 0.01)
+        .onChange((value) => {
+          guiLogoEasing(value);
+        });
+      showFolder.add(userControl, "TargetPosition").onChange((value) => {
         guiShowPos(value);
       });
-      soundFolder.add(userControl, "attack", 0.0, 3, 0.1).onChange((value) => {
-        updateSoundSetting("attack", value);
+      // soundFolder.add(userControl, "attack", 0.0, 3, 0.1).onChange((value) => {
+      //   updateSoundSetting("attack", value);
+      // });
+      // soundFolder.add(userControl, "release", 0.0, 5, 0.1).onChange((value) => {
+      //   updateSoundSetting("release", value);
+      // });
+      // soundFolder.add(userControl, "isPanRandom").onChange((value) => {
+      //   updateSoundSetting("pan", value);
+      // });
+
+      // Add Text folder
+
+      // Create a textarea element manually
+      const textarea = document.createElement("textarea");
+      textarea.value = `Welcome to the Interactive System Guide!
+This system allows you to explore dynamic visual interactions of CHASS Logo.
+Here’s how to get started:
+• Turn the sound on.
+• Click and Drag the blue bar to change text spacing.
+• Click and Drag the logo to scale.
+• Adjust parameters to make motion different.
+
+Enjoy exploring unique animations!`;
+
+      textarea.style.width = "100%";
+      textarea.style.height = "240px";
+      textarea.style.fontFamily =
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif";
+      textarea.style.fontSize = "12px";
+      textarea.style.lineHeight = "1.6";
+      textarea.style.padding = "8px";
+      textarea.style.border = "1px solid rgba(178, 178, 178, 0.9)";
+      textarea.style.background = "transparent";
+      textarea.style.color = "rgba(50, 50, 50, 0.9)";
+      textarea.style.resize = "none"; // Prevent resizing
+      textarea.setAttribute("readonly", "true");
+
+      // Append textarea to the textFolder
+      showFolder.domElement.appendChild(textarea);
+
+      // Handle scroll events
+      window.addEventListener("scroll", function () {
+        const containers = document.querySelectorAll(".sketch-container");
+        containers.forEach((container, index) => {
+          const rect = container.getBoundingClientRect();
+          const isVisible =
+            rect.top < window.innerHeight / 2 &&
+            rect.bottom > window.innerHeight / 2;
+          container.classList.toggle("active", isVisible);
+
+          // Check if sketch1 is in view
+          if (container.id == "sketch1") {
+            gui.domElement.style.display = isVisible ? "block" : "none"; // Show/hide GUI based on sketch1 visibility
+          }
+        });
       });
-      soundFolder.add(userControl, "release", 0.0, 5, 0.1).onChange((value) => {
-        updateSoundSetting("release", value);
-      });
-      soundFolder.add(userControl, "isPanRandom").onChange((value) => {
-        updateSoundSetting("pan", value);
-      });
+
+      // Trigger initial scroll check
+      window.dispatchEvent(new Event("scroll"));
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
@@ -94,42 +199,6 @@
     <main></main>
     <div id="sketch1" class="sketch-container"></div>
     <div id="sketch2" class="sketch-container"></div>
-
-    <script>
-      // const sketches = [];
-      // new p5(function (p) {
-      //   p.setup = function () {
-      //     const canvas = p.createCanvas(400, 400);
-      //     canvas.parent("sketch3");
-      //   };
-      //   p.draw = function () {
-      //     p.background(0, 0, 255);
-      //     p.triangle(
-      //       p.width / 2,
-      //       p.height / 4,
-      //       p.width / 4,
-      //       (p.height * 3) / 4,
-      //       (p.width * 3) / 4,
-      //       (p.height * 3) / 4
-      //     );
-      //   };
-      // });
-
-      // Handle scroll events
-      window.addEventListener("scroll", function () {
-        const containers = document.querySelectorAll(".sketch-container");
-        containers.forEach((container, index) => {
-          const rect = container.getBoundingClientRect();
-          const isVisible =
-            rect.top < window.innerHeight / 2 &&
-            rect.bottom > window.innerHeight / 2;
-          container.classList.toggle("active", isVisible);
-        });
-      });
-
-      // Trigger initial scroll check
-      window.dispatchEvent(new Event("scroll"));
-    </script>
     <script src="sketch.js"></script>
     <script src="sketch2.js"></script>
     <script src="circle.js"></script>

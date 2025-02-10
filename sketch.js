@@ -784,14 +784,7 @@ const sketch = (p) => {
     p.background(255);
     Engine.update(engine);
     p.rectMode(p.CENTER);
-    //hint
-    p.textSize(8);
-    p.textFont("Verdana");
-    p.text(
-      "Hint: Drag the logo to scale, drag the blue bar to change spacing",
-      10,
-      20
-    );
+
     //draw logo
     let logoHeight = 40;
 
