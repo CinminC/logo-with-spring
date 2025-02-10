@@ -46,6 +46,9 @@ const sketch2 = (p) => {
   let prevMouseX = 0;
   let mouseSpeed = 0;
 
+  let scrollProgress = 0; // Track scroll position
+  let rectWidthProgress = 0; // Track width animation progress
+
   function preloadImages(imagePaths, imageElements) {
     for (let path of imagePaths) {
       imageElements.push(p.loadImage(path));
@@ -122,9 +125,32 @@ const sketch2 = (p) => {
 
   p.draw = function () {
     p.background(220);
+
+    // Update scroll progress based on container visibility
+    const container = document.getElementById("sketch2");
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      const startTrigger = window.innerHeight * 0.8; // Start animation when 80% visible
+      if (rect.top < startTrigger) {
+        const progress =
+          (startTrigger - rect.top) / (startTrigger - rect.height * 0.2);
+        scrollProgress = p.constrain(progress, 0, 1);
+      } else {
+        scrollProgress = 0;
+      }
+    }
+
+    // Smoothly animate rectWidthProgress
+    rectWidthProgress = p.lerp(rectWidthProgress, scrollProgress, 0.1);
+
+    // Calculate current rectangle width and center position
+    const currentRectWidth = rectWidth * rectWidthProgress;
+    const xOffset = (rectWidth - currentRectWidth) / 2;
+
     logoXTarget = p.mouseX;
     logoX = p.lerp(logoX, logoXTarget, 0.1);
     let hoveredIndex = -1; // 当前鼠标悬停的长方形索引
+
     // 检查鼠标是否在某个长方形上
     let yPos = 0;
     if (!p.mouseIsPressed) {
@@ -155,9 +181,9 @@ const sketch2 = (p) => {
         lerpSpeed
       );
 
-      // 绘制长方形
+      // 绘制长方形 - modified to grow from center
       p.stroke(178);
-      p.rect(0, yOffset, rectWidth, rects[i].height);
+      p.rect(xOffset, yOffset, currentRectWidth, rects[i].height);
 
       // 如果当前长方形被悬停，绘制圆形
       if (!p.mouseIsPressed) {
