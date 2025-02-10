@@ -278,14 +278,14 @@ const sketch2 = (p) => {
           p.textAlign(p.LEFT);
           p.textSize(12);
           p.fill(0);
-          p.text(
-            `Progress: ${rects[i].animationProgress.toFixed(
-              2
-            )}\nDuration: ${getSpeedForPosition(rects[i].barXCurrent, p.width)}
-Easing: ${rects[i].easingName}`,
-            rects[i].barXCurrent + 15,
-            yOffset + rects[i].height / 2
-          );
+          //           p.text(
+          //             `Progress: ${rects[i].animationProgress.toFixed(
+          //               2
+          //             )}\nDuration: ${getSpeedForPosition(rects[i].barXCurrent, p.width)}
+          // Easing: ${rects[i].easingName}`,
+          //             rects[i].barXCurrent + 15,
+          //             yOffset + rects[i].height / 2
+          //           );
           p.pop();
 
           p.rect(
@@ -327,6 +327,16 @@ Easing: ${rects[i].easingName}`,
     // Calculate mouse speed at the start of draw
     mouseSpeed = p.abs(p.mouseX - prevMouseX);
     prevMouseX = p.mouseX;
+
+    // Draw cover rectangles on both sides
+    p.push();
+    p.noStroke();
+    p.fill(250); // Same as background color
+    // Left cover
+    p.rect(0, 0, xOffset, p.height);
+    // Right cover
+    p.rect(xOffset + currentRectWidth, 0, xOffset, p.height);
+    p.pop();
   };
 
   // 调整目标高度使得总高度保持一致
@@ -416,13 +426,13 @@ Easing: ${rects[i].easingName}`,
     p.textAlign(p.LEFT);
     p.textSize(12);
     p.fill(0);
-    p.text(
-      `Force: ${rect.springForce.toFixed(3)}\nDamping: ${rect.damping.toFixed(
-        3
-      )}`,
-      10, // x position
-      y
-    ); // y position aligned with current rectangle
+    // p.text(
+    //   `Force: ${rect.springForce.toFixed(3)}\nDamping: ${rect.damping.toFixed(
+    //     3
+    //   )}`,
+    //   10, // x position
+    //   y
+    // ); // y position aligned with current rectangle
     p.pop();
 
     p.pop();
