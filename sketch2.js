@@ -32,6 +32,7 @@ const sketch2 = (p) => {
   let imageScale = 0.1;
   let totalW = 0;
   let totalW2 = 0;
+  let minLogoWidth = 0; // Add this to store minimum logo width
 
   let springForce = 0.1; // Spring constant
   let damping = 0.8; // Damping factor
@@ -121,6 +122,10 @@ const sketch2 = (p) => {
     normalizeHeights();
     totalW = calculateTotalWidth(imageElements);
     totalW2 = calculateTotalWidth(imageElements2);
+
+    // Calculate minimum width needed for images
+    let imageSpacing = 0; // minimum spacing between image rows
+    minLogoWidth = p.max(totalW, totalW2) + imageSpacing * 2; // Add padding
   };
 
   p.draw = function () {
@@ -148,13 +153,22 @@ const sketch2 = (p) => {
     const xOffset = (rectWidth - currentRectWidth) / 2;
 
     logoXTarget = p.mouseX;
-    logoX = p.lerp(logoX, logoXTarget, 0.1);
+    // Map the logo position from window coordinates to rectangle boundaries
+    logoX = p.map(p.mouseX, 0, p.width, xOffset, xOffset + currentRectWidth);
     let hoveredIndex = -1; // 当前鼠标悬停的长方形索引
 
     // 检查鼠标是否在某个长方形上
     let yPos = 0;
     if (!p.mouseIsPressed) {
-      mouseBeforeClick = p.mouseX;
+      // Map mouseBeforeClick from window coordinates to rectangle boundaries
+      mouseBeforeClick = p.map(
+        p.mouseX,
+        0,
+        p.width,
+        xOffset,
+        xOffset + currentRectWidth
+      );
+
       for (let i = 0; i < rects.length; i++) {
         if (p.mouseY > yPos && p.mouseY < yPos + rects[i].height) {
           hoveredIndex = i; // 找到悬停的长方形
@@ -187,7 +201,13 @@ const sketch2 = (p) => {
 
       // 如果当前长方形被悬停，绘制圆形
       if (!p.mouseIsPressed) {
-        rectWidthMul = p.map(p.noise(p.mouseX / 20, yOffset), 0, 1, 0.05, 0.7);
+        rectWidthMul = p.map(
+          p.noise(p.mouseX / 20, yOffset),
+          0,
+          1,
+          p.max(minLogoWidth, 0.05 * (currentRectWidth / p.width)),
+          0.7 * currentRectWidth * (currentRectWidth / p.width)
+        );
       }
 
       if (i === lastHoveredIndex) {
@@ -196,12 +216,9 @@ const sketch2 = (p) => {
           rects[i].targetLogoH,
           rects[i].height,
           0.2
-        ); // 目标大小设为50
-        rects[i].targetLogoW = p.lerp(
-          rects[i].targetLogoW,
-          rectWidth * rectWidthMul,
-          0.1
         );
+        rects[i].targetLogoW = p.lerp(rects[i].targetLogoW, rectWidthMul, 0.1);
+
         drawFullLogo(
           p.mouseIsPressed ? mouseBeforeClick : logoX,
           yOffset + rects[i].height / 2,
