@@ -722,7 +722,9 @@ const sketch = (p) => {
     engine.world.gravity.x = 0;
     engine.world.gravity.y = 0;
 
-    widthWithSpacing = imageManager1.calculateWidthWithSpacing();
+    if (imageManager1) {
+      widthWithSpacing = imageManager1.calculateWidthWithSpacing();
+    }
     logoWidth = widthWithSpacing;
     logoTargetWidth = widthWithSpacing;
     imageManager1.initialize(widthWithSpacing);
