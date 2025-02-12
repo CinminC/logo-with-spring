@@ -183,7 +183,7 @@ const sketch2 = (p) => {
         adjustHeights(hoveredIndex);
       }
     }
-    p.print(hoveredIndex, lastHoveredIndex);
+    // p.print(hoveredIndex, lastHoveredIndex);
 
     // 使用 lerp 平滑过渡当前高度到目标高度
     let yOffset = 0; // 用于竖直排列
