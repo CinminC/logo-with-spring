@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CHASS Dynamic VI</title>
     <script type="module">
       import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
       const gui = new GUI();
@@ -120,7 +121,7 @@
       const textarea = document.createElement("textarea");
       textarea.value = `Welcome to the Interactive System Guide!
 This system allows you to explore dynamic visual interactions of CHASS Logo.
-Here’s how to get started:
+Here's how to get started:
 • Turn the sound on.
 • Click and Drag the blue bar to change text spacing.
 • Click and Drag the logo to scale.
@@ -194,15 +195,31 @@ Enjoy exploring unique animations!`;
         opacity: 1;
       }
     </style>
+    <script>
+      // Function to refresh the page once after sketch.js is loaded
+      function refreshAfterSketchLoaded() {
+        if (!sessionStorage.getItem("hasRefreshed")) {
+          sessionStorage.setItem("hasRefreshed", "true");
+          location.reload();
+        }
+      }
+    </script>
   </head>
 
   <body>
     <main></main>
     <div id="sketch1" class="sketch-container"></div>
     <div id="sketch2" class="sketch-container"></div>
-    <script src="sketch.js"></script>
+    <script src="sketch.js" defer></script>
     <script src="sketch2.js"></script>
     <script src="circle.js"></script>
     <script src="boundary.js"></script>
+    <script>
+      // Ensure the DOM is fully loaded before running any initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        // Call the refresh function after sketch.js is loaded
+        refreshAfterSketchLoaded();
+      });
+    </script>
   </body>
 </html>
