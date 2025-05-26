@@ -368,9 +368,9 @@ const sketch2 = (p) => {
     p.textSize(20);
     p.text("acceleration data:", 25, 145);
     p.textSize(15);
-    p.text("x = " + x.toFixed(2), 25, 170); // .toFixed means just show (x) decimal places
-    p.text("y = " + y.toFixed(2), 25, 190);
-    p.text("z = " + z.toFixed(4), 25, 210);
+    p.text("x = " + accX.toFixed(2), 25, 170); // .toFixed means just show (x) decimal places
+    p.text("y = " + accY.toFixed(2), 25, 190);
+    p.text("z = " + accZ.toFixed(4), 25, 210);
     p.pop();
   };
 
