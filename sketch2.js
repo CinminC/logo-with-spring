@@ -50,6 +50,11 @@ const sketch2 = (p) => {
   let scrollProgress = 0; // Track scroll position
   let rectWidthProgress = 0; // Track width animation progress
 
+  let gyroAvailable = false;
+  let gyroData = { x: 0, y: 0, z: 0 };
+  let targetX = 0;
+  let currentX = 0;
+
   function preloadImages(imagePaths, imageElements) {
     for (let path of imagePaths) {
       imageElements.push(p.loadImage(path));
@@ -126,6 +131,8 @@ const sketch2 = (p) => {
     // Calculate minimum width needed for images
     let imageSpacing = 0; // minimum spacing between image rows
     minLogoWidth = p.max(totalW, totalW2) + imageSpacing * 2; // Add padding
+
+    setupGyroscope();
   };
 
   p.draw = function () {
@@ -337,6 +344,8 @@ const sketch2 = (p) => {
     // Right cover
     p.rect(xOffset + currentRectWidth, 0, xOffset, p.height);
     p.pop();
+
+    updateSpringPhysics();
   };
 
   // 调整目标高度使得总高度保持一致
@@ -533,14 +542,15 @@ const sketch2 = (p) => {
         maxOffset
       );
 
-      p.fill("#0139D9");
+      p.fill(255, 0, 0);
+      // p.fill("#0139D9");
       p.rect(barX + currentRect.barXCurrent, barY, barW, barH);
     } else {
       // Reset the current rectangle's properties
       let currentRect = rects[lastHoveredIndex];
       currentRect.barXCurrent = 0;
       currentRect.barVelocity = 0;
-      p.fill("#0139D9");
+      p.fill(255, 0, 0);
       p.rect(barX, barY, barW, barH);
     }
     p.pop();
@@ -699,6 +709,85 @@ const sketch2 = (p) => {
     rectWidth = p.width;
     normalizeHeights();
   };
+
+  function setupGyroscope() {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      // iOS 13+ devices need to request permission
+      DeviceOrientationEvent.requestPermission()
+        .then((response) => {
+          if (response === "granted") {
+            window.addEventListener("deviceorientation", handleGyroscope);
+            gyroAvailable = true;
+          }
+        })
+        .catch(console.error);
+    } else if (window.DeviceOrientationEvent) {
+      // Other devices
+      window.addEventListener("deviceorientation", handleGyroscope);
+      gyroAvailable = true;
+    }
+  }
+
+  function handleGyroscope(event) {
+    // gamma is the left-to-right tilt in degrees, where right is positive
+    gyroData.x = event.gamma;
+    // beta is the front-to-back tilt in degrees, where front is positive
+    gyroData.y = event.beta;
+    // alpha is the compass direction in degrees
+    gyroData.z = event.alpha;
+  }
+
+  function updateSpringPhysics() {
+    if (gyroAvailable) {
+      // Map gyroscope tilt (-90 to 90 degrees) to screen width
+      targetX = p.map(gyroData.x, -45, 45, 0, p.width);
+    } else {
+      // Fallback to mouse control on desktop
+      targetX = p.mouseX;
+    }
+
+    // Spring force calculation
+    let force = springForce * (targetX - currentX);
+    velocity += force;
+    velocity *= damping;
+    currentX += velocity;
+
+    // Update logo width based on position
+    if (currentX > p.width / 2) {
+      let extension = p.map(
+        currentX,
+        p.width / 2,
+        p.width,
+        rects[lastHoveredIndex].originalHeight / 2,
+        rects[lastHoveredIndex].originalHeight / 2 +
+          rects[lastHoveredIndex].originalHeight * 0.3
+      );
+      rects[lastHoveredIndex].currentLogoWidth =
+        rects[lastHoveredIndex].originalHeight + extension;
+    } else {
+      rects[lastHoveredIndex].currentLogoWidth =
+        rects[lastHoveredIndex].originalHeight;
+    }
+  }
+
+  function init() {
+    setupGyroscope();
+    // ... other initialization code ...
+  }
+
+  function createGyroscopeButton() {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      let button = p.createButton("Enable Gyroscope");
+      button.position(20, 20);
+      button.mousePressed(setupGyroscope);
+    }
+  }
 };
 
 // Create the sketch instance
