@@ -450,7 +450,11 @@ const sketch = (p) => {
 
       this.envelope = context.createGain();
       this.source.connect(this.envelope);
-      this.envelope.connect(master);
+      // this.envelope.connect(master);
+
+      this.panner = context.createStereoPanner();
+      this.envelope.connect(this.panner);
+      this.panner.connect(master);
 
       this.isHor = isHor; //for switching mapping value when dragging grey area
       this.positionX = p.width / 2; //pos= center, spread= audio duration
@@ -465,7 +469,8 @@ const sketch = (p) => {
         0,
         track.buffer.duration()
       );
-      this.amp = p.map(this.positionY, p.height / 2, 0, 0.05, 0.7);
+      this.amp = 0.5;
+      // this.amp = p.map(this.positionY, p.height / 2, 0, 0.05, 0.7);
 
       this.randomOffset = p.random(
         -track.settings.spread / 2,
@@ -491,6 +496,21 @@ const sketch = (p) => {
       );
       this.envelope.gain.linearRampToValueAtTime(0, this.now + grainDuration);
 
+      let panPosition = 0;
+      if (isBarDrag) {
+        panPosition = p.map(
+          barX,
+          p.width / 2 - widthWithSpacing / 2 + barW * 3,
+          p.width / 2 + widthWithSpacing / 2 - barW * 3,
+          -1,
+          1,
+          true
+        );
+      } else {
+        let panRange = p.map(logoWidth, 204, 367, 0.0, 1.0, true);
+        panPosition = p.random([-panRange, panRange]);
+      }
+      this.panner.pan.value = panPosition;
       this.source.stop(this.now + grainDuration + 0.1);
     }
   }
@@ -873,6 +893,9 @@ const sketch = (p) => {
       logoTargetWidth = widthWithSpacing;
       logoTargetHeight = p.map(p.mouseY, logoPosY, 0, 40, 160, true);
 
+      let mappedRelease = p.map(logoHeight, 40, 136, 0.3, 1.5, true);
+      updateSoundSetting("release", mappedRelease);
+
       // if (abs(pmouseX - mouseX) > 0) {
       //   activeTracks.add("note_hor");
       // }
@@ -1054,19 +1077,22 @@ const sketch = (p) => {
     if (param == "density") density = v;
     if (param == "pan") isPanRandom = v;
     tracks.forEach((track) => {
-      track.buffer.connect(master);
-      // track.isLoaded = false;
-      track.voices = [];
-      track.settings = {
-        attack: attack,
-        decay: p.random(0.1, 0.5),
-        sustain: p.random(0.1, 0.8),
-        release: release,
-        density: density,
-        spread: track.buffer.duration(),
-        pan: isPanRandom ? p.random(-0.5, 0.5) : 0,
-        trans: 1,
-      };
+      if (!track.settings) {
+        track.settings = {
+          attack: attack,
+          decay: p.random(0.1, 0.5),
+          sustain: p.random(0.1, 0.8),
+          release: release,
+          density: density,
+          spread: track.buffer.duration(),
+          pan: isPanRandom ? p.random(-0.5, 0.5) : 0,
+          trans: 1,
+        };
+      }
+
+      if (param in track.settings) {
+        track.settings[param] = v;
+      }
     });
   }
 
