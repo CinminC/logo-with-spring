@@ -126,6 +126,33 @@ const sketch2 = (p) => {
     // Calculate minimum width needed for images
     let imageSpacing = 0; // minimum spacing between image rows
     minLogoWidth = p.max(totalW, totalW2) + imageSpacing * 2; // Add padding
+
+    // DeviceOrientationEvent, DeviceMotionEvent
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      // ios 13 device
+
+      DeviceOrientationEvent.requestPermission()
+        .catch(() => {
+          // show permission dialog only the first time
+          let button = createButton("click to allow access to sensors");
+          button.style("font-size", "24px");
+          button.center();
+          button.mousePressed(requestAccess);
+          throw error;
+        })
+        .then(() => {
+          // on any subsequent visits
+          permissionGranted = true;
+        });
+    } else {
+      // non ios 13 device
+      textSize(48);
+      // text("non ios 13 device", 100, 100);
+      permissionGranted = true;
+    }
   };
 
   p.draw = function () {
@@ -337,6 +364,9 @@ const sketch2 = (p) => {
     // Right cover
     p.rect(xOffset + currentRectWidth, 0, xOffset, p.height);
     p.pop();
+
+    p.text(rotationY, 50, 50);
+    p.text(rotationX, 50, 100);
   };
 
   // 调整目标高度使得总高度保持一致
@@ -699,6 +729,20 @@ const sketch2 = (p) => {
     rectWidth = p.width;
     normalizeHeights();
   };
+
+  function requestAccess() {
+    DeviceOrientationEvent.requestPermission()
+      .then((response) => {
+        if (response == "granted") {
+          permissionGranted = true;
+        } else {
+          permissionGranted = false;
+        }
+      })
+      .catch(console.error);
+
+    this.remove();
+  }
 };
 
 // Create the sketch instance
