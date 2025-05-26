@@ -162,11 +162,13 @@ const sketch2 = (p) => {
     const currentRectWidth = rectWidth * rectWidthProgress;
     const xOffset = (rectWidth - currentRectWidth) / 2;
 
-    logoXTarget = p.mouseX;
+    // logoXTarget = p.mouseX;
     // Map the logo position from window coordinates to rectangle boundaries
-    logoX = isGyro
+    logoXTarget = isGyro
       ? p.map(gamma, -60, 60, xOffset, xOffset + currentRectWidth)
       : p.map(p.mouseX, 0, p.width, xOffset, xOffset + currentRectWidth);
+
+    logoX = isGyro ? p.lerp(logoX, logoXTarget, 0.05) : logoXTarget;
     let hoveredIndex = -1; // 当前鼠标悬停的长方形索引
 
     // 检查鼠标是否在某个长方形上
