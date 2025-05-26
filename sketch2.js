@@ -53,10 +53,11 @@ const sketch2 = (p) => {
   let isGyro = false;
   let alpha = 0,
     beta = 0,
+    betaLerp = 0,
     gamma = 0; // gyroscope variables
-  let x = 0.0,
-    y = 0.0,
-    z = 0.0; // accelerometer variables
+  let accX = 0.0,
+    accY = 0.0,
+    accZ = 0.0; // accelerometer variables
   let xPosition = 0;
   let yPosition = 0;
 
@@ -177,15 +178,16 @@ const sketch2 = (p) => {
       // Map mouseBeforeClick from window coordinates to rectangle boundaries
       mouseBeforeClick = logoXTarget;
 
-      let yy = 0;
+      let yData = 0;
       if (isGyro) {
-        yy = p.map(beta, -30, 60, 0, p.height);
+        betaLerp = p.lerp(betaLerp, beta, 0.1);
+        yData = p.map(betaLerp, -30, 60, 0, p.height);
       } else {
-        yy = p.mouseY;
+        yData = p.mouseY;
       }
 
       for (let i = 0; i < rects.length; i++) {
-        if (yy > yPos && yy < yPos + rects[i].height) {
+        if (yData > yPos && yData < yPos + rects[i].height) {
           hoveredIndex = i; // 找到悬停的长方形
         }
         yPos += rects[i].height; // 更新 y 位置
@@ -383,9 +385,9 @@ const sketch2 = (p) => {
   // Read in accelerometer data
   window.addEventListener("devicemotion", function (e) {
     // get accelerometer values
-    x = e.acceleration.x;
-    y = e.acceleration.y;
-    z = e.acceleration.z;
+    accX = e.acceleration.x;
+    accY = e.acceleration.y;
+    accZ = e.acceleration.z;
   });
 
   // 调整目标高度使得总高度保持一致
