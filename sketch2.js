@@ -136,6 +136,7 @@ const sketch2 = (p) => {
     minLogoWidth = p.max(totalW, totalW2) + imageSpacing * 2; // Add padding
 
     setupGyroscope();
+    createGyroscopeButton();
   };
 
   p.draw = function () {
@@ -730,29 +731,44 @@ const sketch2 = (p) => {
       typeof DeviceOrientationEvent.requestPermission === "function"
     ) {
       // Create button if it doesn't exist
-      if (!gyroButton) {
-        gyroButton = p.createButton("Enable Gyroscope");
-        gyroButton.position(20, 20);
-        gyroButton.style("z-index", "1000");
-        gyroButton.mousePressed(() => {
-          DeviceOrientationEvent.requestPermission()
-            .then((response) => {
-              if (response === "granted") {
-                window.addEventListener("deviceorientation", handleGyroscope);
-                gyroAvailable = true;
-                gyroButton.hide(); // Hide button after permission granted
-                debugText = "Gyroscope permission granted";
-              } else {
-                debugText = "Gyroscope permission denied";
-              }
-            })
-            .catch((error) => {
-              debugText = "Error requesting gyroscope: " + error;
-              console.error(error);
-            });
+      // if (!gyroButton) {
+      //   gyroButton = p.createButton("Enable Gyroscope");
+      //   gyroButton.position(20, 20);
+      //   gyroButton.style("z-index", "1000");
+      //   gyroButton.mousePressed(() => {
+      //     DeviceOrientationEvent.requestPermission()
+      //       .then((response) => {
+      //         if (response === "granted") {
+      //           window.addEventListener("deviceorientation", handleGyroscope);
+      //           gyroAvailable = true;
+      //           gyroButton.hide(); // Hide button after permission granted
+      //           debugText = "Gyroscope permission granted";
+      //         } else {
+      //           debugText = "Gyroscope permission denied";
+      //         }
+      //       })
+      //       .catch((error) => {
+      //         debugText = "Error requesting gyroscope: " + error;
+      //         console.error(error);
+      //       });
+      //   });
+      // }
+      DeviceOrientationEvent.requestPermission()
+        .catch(() => {
+          // show permission dialog only the first time
+          let button = createButton("click to allow access to sensors");
+          button.style("font-size", "24px");
+          button.center();
+          button.mousePressed(requestAccess);
+          throw error;
+        })
+        .then(() => {
+          // on any subsequent visits
+          permissionGranted = true;
         });
-      }
     } else if (window.DeviceOrientationEvent) {
+      permissionGranted = true;
+
       // For non-iOS devices
       window.addEventListener("deviceorientation", handleGyroscope);
       gyroAvailable = true;
@@ -827,7 +843,7 @@ const sketch2 = (p) => {
       typeof DeviceOrientationEvent.requestPermission === "function"
     ) {
       let button = p.createButton("Enable Gyroscope");
-      button.position(20, 20);
+      button.position(120, 120);
       button.mousePressed(setupGyroscope);
     }
   }
