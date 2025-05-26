@@ -183,8 +183,15 @@ const sketch2 = (p) => {
         xOffset + currentRectWidth
       );
 
+      let yy = 0;
+      if (isGyro) {
+        yy = p.map(beta, -30, 60, 0, p.height);
+      } else {
+        yy = p.mouseY;
+      }
+
       for (let i = 0; i < rects.length; i++) {
-        if (p.mouseY > yPos && p.mouseY < yPos + rects[i].height) {
+        if (yy > yPos && yy < yPos + rects[i].height) {
           hoveredIndex = i; // 找到悬停的长方形
         }
         yPos += rects[i].height; // 更新 y 位置
