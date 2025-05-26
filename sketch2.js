@@ -175,13 +175,7 @@ const sketch2 = (p) => {
     let yPos = 0;
     if (!p.mouseIsPressed) {
       // Map mouseBeforeClick from window coordinates to rectangle boundaries
-      mouseBeforeClick = p.map(
-        p.mouseX,
-        0,
-        p.width,
-        xOffset,
-        xOffset + currentRectWidth
-      );
+      mouseBeforeClick = logoXTarget;
 
       let yy = 0;
       if (isGyro) {
