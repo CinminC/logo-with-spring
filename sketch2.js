@@ -55,6 +55,9 @@ const sketch2 = (p) => {
   let targetX = 0;
   let currentX = 0;
 
+  let gyroButton;
+  let debugText = "";
+
   function preloadImages(imagePaths, imageElements) {
     for (let path of imagePaths) {
       imageElements.push(p.loadImage(path));
@@ -346,6 +349,16 @@ const sketch2 = (p) => {
     p.pop();
 
     updateSpringPhysics();
+
+    // Add debug display
+    p.push();
+    p.fill(0);
+    p.noStroke();
+    p.textSize(12);
+    p.textAlign(p.LEFT);
+    p.text(debugText, 10, p.height - 20);
+    p.text(`Gyro available: ${gyroAvailable}`, 10, p.height - 40);
+    p.pop();
   };
 
   // 调整目标高度使得总高度保持一致
@@ -711,38 +724,63 @@ const sketch2 = (p) => {
   };
 
   function setupGyroscope() {
+    // Check if it's iOS 13+ (needs permission)
     if (
       typeof DeviceOrientationEvent !== "undefined" &&
       typeof DeviceOrientationEvent.requestPermission === "function"
     ) {
-      // iOS 13+ devices need to request permission
-      DeviceOrientationEvent.requestPermission()
-        .then((response) => {
-          if (response === "granted") {
-            window.addEventListener("deviceorientation", handleGyroscope);
-            gyroAvailable = true;
-          }
-        })
-        .catch(console.error);
+      // Create button if it doesn't exist
+      if (!gyroButton) {
+        gyroButton = p.createButton("Enable Gyroscope");
+        gyroButton.position(20, 20);
+        gyroButton.style("z-index", "1000");
+        gyroButton.mousePressed(() => {
+          DeviceOrientationEvent.requestPermission()
+            .then((response) => {
+              if (response === "granted") {
+                window.addEventListener("deviceorientation", handleGyroscope);
+                gyroAvailable = true;
+                gyroButton.hide(); // Hide button after permission granted
+                debugText = "Gyroscope permission granted";
+              } else {
+                debugText = "Gyroscope permission denied";
+              }
+            })
+            .catch((error) => {
+              debugText = "Error requesting gyroscope: " + error;
+              console.error(error);
+            });
+        });
+      }
     } else if (window.DeviceOrientationEvent) {
-      // Other devices
+      // For non-iOS devices
       window.addEventListener("deviceorientation", handleGyroscope);
       gyroAvailable = true;
+      debugText = "Non-iOS gyroscope enabled";
+    } else {
+      debugText = "Gyroscope not available";
     }
   }
 
   function handleGyroscope(event) {
-    // gamma is the left-to-right tilt in degrees, where right is positive
-    gyroData.x = event.gamma;
-    // beta is the front-to-back tilt in degrees, where front is positive
-    gyroData.y = event.beta;
-    // alpha is the compass direction in degrees
-    gyroData.z = event.alpha;
+    gyroData.x = event.gamma; // left-to-right tilt
+    gyroData.y = event.beta; // front-to-back tilt
+    gyroData.z = event.alpha; // compass direction
+
+    // Update debug text
+    debugText = `Gyro: x=${gyroData.x.toFixed(2)}, y=${gyroData.y.toFixed(
+      2
+    )}, z=${gyroData.z.toFixed(2)}`;
   }
 
   function updateSpringPhysics() {
-    if (!gyroAvailable || lastHoveredIndex === -1) {
-      return; // Exit if gyroscope not available or no rectangle hovered
+    if (!gyroAvailable) {
+      debugText = "Gyroscope not available";
+      return;
+    }
+    if (lastHoveredIndex === -1) {
+      debugText = "No rectangle hovered";
+      return;
     }
 
     // Map gyroscope tilt (-90 to 90 degrees) to screen width
@@ -756,7 +794,10 @@ const sketch2 = (p) => {
 
     // Get current rectangle
     let currentRect = rects[lastHoveredIndex];
-    if (!currentRect) return;
+    if (!currentRect) {
+      debugText = "No current rectangle";
+      return;
+    }
 
     // Update logo width based on position
     if (currentX > p.width / 2) {
@@ -768,8 +809,10 @@ const sketch2 = (p) => {
         currentRect.originalHeight / 2 + currentRect.originalHeight * 0.3
       );
       currentRect.currentLogoWidth = currentRect.originalHeight + extension;
+      debugText = `Extension: ${extension.toFixed(2)}`;
     } else {
       currentRect.currentLogoWidth = currentRect.originalHeight;
+      debugText = "No extension";
     }
   }
 
