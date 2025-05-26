@@ -774,6 +774,8 @@ const sketch2 = (p) => {
       gyroAvailable = true;
       debugText = "Non-iOS gyroscope enabled";
     } else {
+      permissionGranted = true;
+
       debugText = "Gyroscope not available";
     }
   }
