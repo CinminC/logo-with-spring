@@ -50,6 +50,15 @@ const sketch2 = (p) => {
   let scrollProgress = 0; // Track scroll position
   let rectWidthProgress = 0; // Track width animation progress
 
+  let alpha = 0,
+    beta = 0,
+    gamma = 0; // gyroscope variables
+  let x = 0.0,
+    y = 0.0,
+    z = 0.0; // accelerometer variables
+  let xPosition = 0;
+  let yPosition = 0;
+
   function preloadImages(imagePaths, imageElements) {
     for (let path of imagePaths) {
       imageElements.push(p.loadImage(path));
@@ -337,7 +346,39 @@ const sketch2 = (p) => {
     // Right cover
     p.rect(xOffset + currentRectWidth, 0, xOffset, p.height);
     p.pop();
+
+    // Text commands that display debugging data
+    p.push();
+    p.textSize(20);
+    p.fill("black");
+    p.text("orientation data:", 25, 25);
+    p.textSize(15);
+    p.text("alpha: " + alpha, 25, 50);
+    p.text("beta: " + beta, 25, 70);
+    p.text("gamma: " + gamma, 25, 90);
+    p.textSize(20);
+    p.text("acceleration data:", 25, 125);
+    p.textSize(15);
+    p.text("x = " + x.toFixed(2), 25, 150); // .toFixed means just show (x) decimal places
+    p.text("y = " + y.toFixed(2), 25, 170);
+    p.text("z = " + z.toFixed(4), 25, 190);
+    p.pop();
   };
+
+  // Read in gyroscope data
+  window.addEventListener("deviceorientation", function (e) {
+    alpha = e.alpha;
+    beta = e.beta;
+    gamma = e.gamma;
+  });
+
+  // Read in accelerometer data
+  window.addEventListener("devicemotion", function (e) {
+    // get accelerometer values
+    x = e.acceleration.x;
+    y = e.acceleration.y;
+    z = e.acceleration.z;
+  });
 
   // 调整目标高度使得总高度保持一致
   function adjustHeights(hoveredIndex) {
@@ -699,6 +740,20 @@ const sketch2 = (p) => {
     rectWidth = p.width;
     normalizeHeights();
   };
+
+  function requestAccess() {
+    DeviceOrientationEvent.requestPermission()
+      .then((response) => {
+        if (response == "granted") {
+          permissionGranted = true;
+        } else {
+          permissionGranted = false;
+        }
+      })
+      .catch(console.error);
+
+    this.remove();
+  }
 };
 
 // Create the sketch instance
