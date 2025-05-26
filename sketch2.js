@@ -741,13 +741,12 @@ const sketch2 = (p) => {
   }
 
   function updateSpringPhysics() {
-    if (gyroAvailable) {
-      // Map gyroscope tilt (-90 to 90 degrees) to screen width
-      targetX = p.map(gyroData.x, -45, 45, 0, p.width);
-    } else {
-      // Fallback to mouse control on desktop
-      targetX = p.mouseX;
+    if (!gyroAvailable || lastHoveredIndex === -1) {
+      return; // Exit if gyroscope not available or no rectangle hovered
     }
+
+    // Map gyroscope tilt (-90 to 90 degrees) to screen width
+    targetX = p.map(gyroData.x, -45, 45, 0, p.width);
 
     // Spring force calculation
     let force = springForce * (targetX - currentX);
@@ -755,21 +754,22 @@ const sketch2 = (p) => {
     velocity *= damping;
     currentX += velocity;
 
+    // Get current rectangle
+    let currentRect = rects[lastHoveredIndex];
+    if (!currentRect) return;
+
     // Update logo width based on position
     if (currentX > p.width / 2) {
       let extension = p.map(
         currentX,
         p.width / 2,
         p.width,
-        rects[lastHoveredIndex].originalHeight / 2,
-        rects[lastHoveredIndex].originalHeight / 2 +
-          rects[lastHoveredIndex].originalHeight * 0.3
+        currentRect.originalHeight / 2,
+        currentRect.originalHeight / 2 + currentRect.originalHeight * 0.3
       );
-      rects[lastHoveredIndex].currentLogoWidth =
-        rects[lastHoveredIndex].originalHeight + extension;
+      currentRect.currentLogoWidth = currentRect.originalHeight + extension;
     } else {
-      rects[lastHoveredIndex].currentLogoWidth =
-        rects[lastHoveredIndex].originalHeight;
+      currentRect.currentLogoWidth = currentRect.originalHeight;
     }
   }
 
