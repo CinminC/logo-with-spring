@@ -50,6 +50,7 @@ const sketch2 = (p) => {
   let scrollProgress = 0; // Track scroll position
   let rectWidthProgress = 0; // Track width animation progress
 
+  let isGyro = false;
   let alpha = 0,
     beta = 0,
     gamma = 0; // gyroscope variables
@@ -163,7 +164,9 @@ const sketch2 = (p) => {
 
     logoXTarget = p.mouseX;
     // Map the logo position from window coordinates to rectangle boundaries
-    logoX = p.map(p.mouseX, 0, p.width, xOffset, xOffset + currentRectWidth);
+    logoX = isGyro
+      ? p.map(gamma, -60, 60, xOffset, xOffset + currentRectWidth)
+      : p.map(p.mouseX, 0, p.width, xOffset, xOffset + currentRectWidth);
     let hoveredIndex = -1; // 当前鼠标悬停的长方形索引
 
     // 检查鼠标是否在某个长方形上
@@ -356,17 +359,19 @@ const sketch2 = (p) => {
     p.text("alpha: " + alpha, 25, 50);
     p.text("beta: " + beta, 25, 70);
     p.text("gamma: " + gamma, 25, 90);
+    p.text("isGyro: " + isGyro, 25, 110);
     p.textSize(20);
-    p.text("acceleration data:", 25, 125);
+    p.text("acceleration data:", 25, 145);
     p.textSize(15);
-    p.text("x = " + x.toFixed(2), 25, 150); // .toFixed means just show (x) decimal places
-    p.text("y = " + y.toFixed(2), 25, 170);
-    p.text("z = " + z.toFixed(4), 25, 190);
+    p.text("x = " + x.toFixed(2), 25, 170); // .toFixed means just show (x) decimal places
+    p.text("y = " + y.toFixed(2), 25, 190);
+    p.text("z = " + z.toFixed(4), 25, 210);
     p.pop();
   };
 
   // Read in gyroscope data
   window.addEventListener("deviceorientation", function (e) {
+    isGyro = true;
     alpha = e.alpha;
     beta = e.beta;
     gamma = e.gamma;
