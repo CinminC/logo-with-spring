@@ -201,59 +201,44 @@ Enjoy exploring unique animations!`;
         font-size: 12px;
         padding: 10px;
         display: none;
+        touch-action: none;
       "
     >
       Enable Gyro
     </button>
 
     <script>
-      function setupGyroscope() {
-        const requestButton = document.getElementById("request");
+      document.addEventListener("DOMContentLoaded", function () {
+        const button = document.getElementById("request");
 
-        // Show button only on iOS devices that need permission
+        // Show button only on iOS devices
         if (
           typeof DeviceOrientationEvent !== "undefined" &&
           typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
-          requestButton.style.display = "block";
+          button.style.display = "block";
 
-          // Remove any existing event listeners
-          requestButton.replaceWith(requestButton.cloneNode(true));
-
-          // Get the fresh button reference
-          const freshButton = document.getElementById("request");
-
-          // Add new click listener
-          freshButton.addEventListener("click", function () {
+          // Add both touch and click handlers
+          const requestPermission = function (e) {
+            e.preventDefault(); // Prevent default behavior
             DeviceOrientationEvent.requestPermission()
-              .then(function (response) {
+              .then((response) => {
                 if (response === "granted") {
-                  freshButton.style.display = "none";
-                  window.addEventListener("deviceorientation", function (e) {
-                    // Device orientation is now available
-                  });
+                  button.style.display = "none";
+                  // Permission granted, enable gyroscope
+                  window.dispatchEvent(new Event("gyroscope-enabled"));
                 }
               })
-              .catch(function (error) {
-                console.error("Error requesting permission:", error);
-                alert("Error requesting permission: " + error);
-              });
+              .catch(console.error);
+          };
+
+          // Add both touch and click events
+          button.addEventListener("touchend", requestPermission, {
+            passive: false,
           });
-        } else {
-          // For non-iOS devices
-          window.addEventListener("deviceorientation", function (e) {
-            // Device orientation is available
-          });
+          button.addEventListener("click", requestPermission);
         }
-      }
-
-      // Call setupGyroscope on page load
-      document.addEventListener("DOMContentLoaded", setupGyroscope);
-
-      // Call setupGyroscope after each refresh
-      if (document.readyState === "complete") {
-        setupGyroscope();
-      }
+      });
     </script>
 
     <style>
