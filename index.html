@@ -128,6 +128,7 @@ Here's how to get started:
 • Adjust parameters to make motion different.
 
 Scroll down to interact with logo in different environment.
+On mobile devices, you can tap "Enable Gyro" to activate the gyroscope for interaction.
 Enjoy exploring unique animations!`;
 
       textarea.style.width = "100%";
@@ -216,7 +217,7 @@ Enjoy exploring unique animations!`;
 
             .catch(console.error);
         } else {
-          alert("DeviceMotionEvent is not defined");
+          alert("Gyroscope is only available on mobile devices.");
         }
       }
       document.getElementById("request").onclick = requestT;

@@ -356,22 +356,22 @@ const sketch2 = (p) => {
     p.pop();
 
     // Text commands that display debugging data
-    p.push();
-    p.textSize(20);
-    p.fill("black");
-    p.text("orientation data:", 25, 25);
-    p.textSize(15);
-    p.text("alpha: " + alpha, 25, 50);
-    p.text("beta: " + beta, 25, 70);
-    p.text("gamma: " + gamma, 25, 90);
-    p.text("isGyro: " + isGyro, 25, 110);
-    p.textSize(20);
-    p.text("acceleration data:", 25, 145);
-    p.textSize(15);
-    p.text("x = " + accX.toFixed(2), 25, 170); // .toFixed means just show (x) decimal places
-    p.text("y = " + accY.toFixed(2), 25, 190);
-    p.text("z = " + accZ.toFixed(4), 25, 210);
-    p.pop();
+    // p.push();
+    // p.textSize(20);
+    // p.fill("black");
+    // p.text("orientation data:", 25, 25);
+    // p.textSize(15);
+    // p.text("alpha: " + alpha, 25, 50);
+    // p.text("beta: " + beta, 25, 70);
+    // p.text("gamma: " + gamma, 25, 90);
+    // p.text("isGyro: " + isGyro, 25, 110);
+    // p.textSize(20);
+    // p.text("acceleration data:", 25, 145);
+    // p.textSize(15);
+    // p.text("x = " + accX.toFixed(2), 25, 170); // .toFixed means just show (x) decimal places
+    // p.text("y = " + accY.toFixed(2), 25, 190);
+    // p.text("z = " + accZ.toFixed(4), 25, 210);
+    // p.pop();
   };
 
   // Read in gyroscope data
