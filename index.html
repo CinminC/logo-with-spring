@@ -6,12 +6,11 @@
     <title>CHASS Dynamic VI</title>
     <script type="module">
       import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm";
-      const gui = new GUI();
-      // gui.width = 320;
+      const gui = new GUI({ title: "Controls" });
       gui.domElement.style.background = "rgba(255, 255, 255, 0.9)";
       gui.domElement.style.touchAction = "none";
-      // gui.domElement.style.color = "white";
-      // gui.domElement.style.borderRadius = "8px";
+      gui.domElement.style.userSelect = "none";
+      gui.domElement.style.webkitUserSelect = "none";
 
       // Add custom styles for GUI track and thumb
       const style = document.createElement("style");
@@ -167,6 +166,19 @@ Enjoy exploring unique animations!`;
 
       // Trigger initial scroll check
       window.dispatchEvent(new Event("scroll"));
+
+      // Add touch event listeners to title bar
+      const titleBar = gui.domElement.querySelector(".title");
+      if (titleBar) {
+        titleBar.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          if (gui._closed) {
+            gui.open();
+          } else {
+            gui.close();
+          }
+        });
+      }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
