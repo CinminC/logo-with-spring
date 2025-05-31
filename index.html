@@ -187,40 +187,48 @@ Enjoy exploring unique animations!`;
         z-index: 1000;
         font-size: 12px;
         padding: 10px;
+        display: none; /* Hide button by default */
       "
     >
       Enable Gyro
     </button>
 
     <script>
-      // if (location.protocol != 'https:') {
-      //  location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
-      // }
+      // Check if device supports orientation
+      if (typeof DeviceOrientationEvent !== "undefined") {
+        const requestButton = document.getElementById("request");
 
-      function requestT() {
-        if (
-          typeof DeviceMotionEvent !== "undefined" &&
-          typeof DeviceMotionEvent.requestPermission === "function"
-        ) {
-          alert("enter");
-          DeviceMotionEvent.requestPermission()
-            .then((response) => {
-              alert("resp" + response);
-              if (response == "granted") {
-                window.addEventListener("devicemotion", (e) => {
-                  // do something with e
-                  // hide the button here
-                  document.getElementById("request").style.display = "none";
-                });
-              }
-            })
+        // Show button only on devices that need permission
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+          requestButton.style.display = "block";
 
-            .catch(console.error);
+          requestButton.addEventListener("click", function () {
+            DeviceOrientationEvent.requestPermission()
+              .then(function (response) {
+                if (response === "granted") {
+                  // Permission granted
+                  requestButton.style.display = "none";
+                  // Enable device orientation event
+                  window.addEventListener("deviceorientation", function (e) {
+                    // Device orientation is now available
+                  });
+                }
+              })
+              .catch(function (error) {
+                console.error(
+                  "Error requesting device orientation permission:",
+                  error
+                );
+                alert("Error requesting permission: " + error);
+              });
+          });
         } else {
-          alert("Gyroscope is only available on mobile devices.");
+          // Device doesn't need permission, orientation events should work directly
+          window.addEventListener("deviceorientation", function (e) {
+            // Device orientation is available
+          });
         }
       }
-      document.getElementById("request").onclick = requestT;
     </script>
 
     <style>
